@@ -24,12 +24,39 @@ YYYY-MM-DD HH:MM:SS * Temperature (°C) * Pressure (hPa) *  Counts
 ## **Software Output**  
 The processed data is displayed as interactive graphs, which can be saved as **PNG** files.  
 
-### *Pressure Corrected Counts*
-![Pressure Corrected Counts](https://github.com/user-attachments/assets/cda7324b-0e37-42cc-a00b-afe31d2528a2)
-### *Pressure vs Raw Counts*
-![Pressure vs Raw Counts](https://github.com/user-attachments/assets/3b06ba92-5800-43f9-ab18-86ef6b84d57e) 
-### *Barometric Coefficient*
-![Barometric Coefficient](https://github.com/user-attachments/assets/38554c49-8a4e-4074-a828-700423eb1cf2) 
-### *Sigma Counts*
-![Sigma Counts](https://github.com/user-attachments/assets/798fad72-40cf-4afe-a0e4-0e35bc1e0d2a) 
+<div>
+  <p align="center">
+    <font size=2><i>Pressure Corrected Counts</i></font>
+  </p>
+  <p align="center">
+    <img src="https://github.com/user-attachments/assets/cda7324b-0e37-42cc-a00b-afe31d2528a2" width="700"/>
+  </p>
+</div>
+
+<div>
+  <p align="center">
+    <font size=2><i>Pressure vs Raw Counts</i></font>
+  </p>
+  <p align="center">
+    <img src="https://github.com/user-attachments/assets/3b06ba92-5800-43f9-ab18-86ef6b84d57e" width="700"/>
+  </p>
+</div>
+
+<div>  
+  <p align="center">
+    <font size=2><i>Barometric Coefficient</i></font>
+  </p>
+  <p align="center">
+    <img src="https://github.com/user-attachments/assets/38554c49-8a4e-4074-a828-700423eb1cf2" width="700"/>
+  </p>
+</div>
+
+<div>
+  <p align="center">
+    <font size=2><i>Sigma Counts</i></font>
+  </p>
+  <p align="center">
+    <img src="https://github.com/user-attachments/assets/798fad72-40cf-4afe-a0e4-0e35bc1e0d2a" width="700"/>
+  </p>
+</div>
 
