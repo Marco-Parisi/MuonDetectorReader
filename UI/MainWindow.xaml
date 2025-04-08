@@ -50,7 +50,7 @@
                                        FontWeight="SemiBold"/>
                             <TextBox Text="nessuno" x:Name="BetaBox" Margin="2,5" IsHitTestVisible="False" BorderBrush="White"
                                      VerticalContentAlignment="Center" HorizontalContentAlignment="Left" Width="65" Height="23"
-                                     FontWeight="Bold"/>
+                                     FontWeight="Bold" FontSize="13"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <StackPanel Orientation="Horizontal">
@@ -121,10 +121,12 @@
                             <StackPanel x:Name="DatePickerPanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="-5 5 0 0">
                                 <TextBlock Text="Dal: " VerticalAlignment="Center" Visibility="Collapsed"/>
                                 <!--<local:CustomDatePicker Visibility="Collapsed" x:Name="DateFrom" WatermarkText="Data inizio" Focusable="False" Width="95"/>-->
-                                <ext:DateTimePicker x:Name="DateFrom" Focusable="False" Width="125" Margin="0 0 5 0" ClipValueToMinMax="True" Format="Custom" FormatString="dd/MM/yy HH:mm"/>
+                                <ext:DateTimePicker x:Name="DateFrom" Focusable="False" Width="125" Margin="0 0 5 0" FontSize="{StaticResource FixedFontSize}"
+                                                    ClipValueToMinMax="True" Format="Custom" FormatString="dd/MM/yy HH:mm"/>
                                 <TextBlock Text="-" VerticalAlignment="Center" Visibility="Collapsed"/>
                                 <!--<local:CustomDatePicker Visibility="Collapsed" x:Name="DateTo" WatermarkText="Data fine" Focusable="False" Width="95"/>-->
-                                <ext:DateTimePicker x:Name="DateTo" Focusable="False" Width="125" Margin="5 0 0 0" ClipValueToMinMax="True" Format="Custom" FormatString="dd/MM/yy HH:mm"/>
+                                <ext:DateTimePicker x:Name="DateTo" Focusable="False" Width="125" Margin="5 0 0 0" FontSize="{StaticResource FixedFontSize}"
+                                                    ClipValueToMinMax="True" Format="Custom" FormatString="dd/MM/yy HH:mm"/>
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
