@@ -28,6 +28,7 @@
     <asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
       <dpiAware>false</dpiAware>
     </asmv3:windowsSettings>
+    <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
   </asmv3:application>
   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
     <application>

@@ -22,6 +22,7 @@
         <SolidColorBrush x:Key="ButtonBackgroundBrush" Color="LightGray"/> 
         <SolidColorBrush x:Key="ButtonBackgroundSelectedBrush" Color="IndianRed"/>
         <SolidColorBrush x:Key="BorderBrush" Color="Black"/>
+        <SolidColorBrush x:Key="ButtonForegroundBrush" Color="Black"/>
 
         <Style TargetType="{x:Type ToggleButton}">
             <Setter Property="Background" Value="{StaticResource ButtonBackgroundBrush}" />
