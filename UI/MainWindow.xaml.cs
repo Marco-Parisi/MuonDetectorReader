@@ -15,6 +15,9 @@ using System.Xml;
 using DateTimePicker = Xceed.Wpf.Toolkit.DateTimePicker;
 using static MuonDetectorReader.Graph;
 using System.Threading.Tasks;
+using Microsoft.Data.Analysis;
+using System.Security.Cryptography;
+using System.Windows.Markup;
 
 namespace MuonDetectorReader
 {
@@ -108,6 +111,8 @@ namespace MuonDetectorReader
                     RawCounts.Reverse();
 
                     DataLostCheck();
+
+                    RemoveDuplicates();
 
                     if (BetaBox.Text != "nessuno" && double.TryParse(PressBox.Text, out double refPress))
                     {
@@ -392,8 +397,6 @@ namespace MuonDetectorReader
 
         }
 
-
-
         private void TempCorrBox_Click(object sender, RoutedEventArgs e)
         {
 
@@ -480,62 +483,30 @@ namespace MuonDetectorReader
 
             if (Dates.Count == 0 || Temp.Count == 0 || Press.Count == 0 || RawCounts.Count == 0)
                 throw new Exception("Formato errato");
-
         }
 
 
-        private void DayCutter()
+        private void RemoveDuplicates()
         {
-            List<double> CountDay = new List<double>();
-            List<double> TempDay = new List<double>();
+            var seen = new HashSet<DateTime>();
+            var duplicateIndexes = new List<int>();
 
-            //double countDayMean = 0;
-            double count00mean = 0;
-            double count12mean = 0;
-            double temp00mean = 0;
-            double temp12mean = 0;
-            //double tempDayMean = 0;
-            int mean00Count = 0;
-            int mean12Count = 0;
-
-            
             for (int i = 0; i < Dates.Count; i++)
             {
-                int ip1 = i < Dates.Count - 1 ? i + 1 : i;
-
-                //if (DT[i].Day == DT[ip1].Day)
-                if (Dates[i].Day == Dates[ip1].Day)
+                if (!seen.Add(Dates[i]))
                 {
-                    if (Dates[i].Hour < 12)
-                    {
-                        count00mean += CorrCounts[i];
-                        temp00mean += Press[i];
-                        mean00Count++;
-                    }
-                    else
-                    {
-                        count12mean += CorrCounts[i];
-                        temp12mean += Press[i];
-                        mean12Count++;
-
-                    }
+                    duplicateIndexes.Add(i);
                 }
-                else
-                {
-                    CountDay.Add(count00mean / mean00Count);
-                    CountDay.Add(count12mean / mean12Count);
+            }
 
-                    TempDay.Add(temp00mean / mean00Count);
-                    TempDay.Add(temp12mean / mean12Count);
-                    //TempDay.Add(tempDayMean / meanCount);
-                    temp00mean = temp12mean = count00mean = count12mean = mean00Count = mean12Count = 0;
-                    //Dates.Add(DT[i - 1].ToString());
-
-                    //tempDayMean = countDayMean = meanCount = 0;
-                }
-            }         
+            foreach (var index in duplicateIndexes.OrderByDescending(i => i))
+            {
+                Dates.RemoveAt(index);
+                Press.RemoveAt(index);
+                Temp.RemoveAt(index);
+                RawCounts.RemoveAt(index);
+            }
         }
-
     
 
         private void GenerateCorrCounts()
