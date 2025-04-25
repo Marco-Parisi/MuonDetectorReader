@@ -15,15 +15,10 @@ using System.Xml;
 using DateTimePicker = Xceed.Wpf.Toolkit.DateTimePicker;
 using static MuonDetectorReader.Graph;
 using System.Threading.Tasks;
-using Microsoft.Data.Analysis;
-using System.Security.Cryptography;
-using System.Windows.Markup;
 
 namespace MuonDetectorReader
-{
-    /// <summary>
-    /// Logica di interazione per MainWindow.xaml
-    /// </summary>
+{ 
+
     public partial class MainWindow : Window
     {
 
@@ -740,23 +735,6 @@ namespace MuonDetectorReader
                 if((child as CheckBox) != (sender as CheckBox))
                     (child as CheckBox).IsChecked = false;
             }
-        }
-
-
-        private void Fluxgate_Click(object sender, RoutedEventArgs e)
-        {
-            Fluxgate FluxgateWindow = new Fluxgate();
-            FluxgateWindow.Show();
-
-        }
-
-
-        private void AverageGraph_Click(object sender, RoutedEventArgs e)
-        {
-            AverageGraph avgpage = new AverageGraph();
-            avgpage.Show();
-
-            Close();
         }
 
         private void DatePickerResetDate()

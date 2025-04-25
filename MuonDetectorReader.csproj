@@ -32,8 +32,8 @@
     <PublisherName>Marco Parisi</PublisherName>
     <SuiteName>Muon Detector Reader</SuiteName>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>1</ApplicationRevision>
-    <ApplicationVersion>1.1.8.%2a</ApplicationVersion>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.1.8.0</ApplicationVersion>
     <UseApplicationTrust>true</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -114,15 +114,6 @@
     </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Apache.Arrow, Version=14.0.2.0, Culture=neutral, PublicKeyToken=204f54e5a45c07df, processorArchitecture=MSIL">
-      <HintPath>packages\Apache.Arrow.14.0.2\lib\netstandard2.0\Apache.Arrow.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Data.Analysis, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Data.Analysis.0.22.2\lib\netstandard2.0\Microsoft.Data.Analysis.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ML.DataView, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.ML.DataView.4.0.2\lib\netstandard2.0\Microsoft.ML.DataView.dll</HintPath>
-    </Reference>
     <Reference Include="OxyPlot, Version=2.0.0.0, Culture=neutral, PublicKeyToken=638079a8f0bd61e9, processorArchitecture=MSIL">
       <HintPath>packages\OxyPlot.Core.2.0.0\lib\net45\OxyPlot.dll</HintPath>
     </Reference>
@@ -186,21 +177,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="UI\AverageGraph.xaml.cs">
-      <DependentUpon>AverageGraph.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UI\CustomDatePicker.cs" />
-    <Compile Include="DataManipulation\AntiCorrHelper.cs" />
-    <Compile Include="DataManipulation\NOAAData.cs" />
-    <Compile Include="DataManipulation\TemperatureModel.cs" />
-    <Page Include="UI\AverageGraph.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="UI\Fluxgate.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="UI\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -209,11 +186,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Fluxgate.xaml.cs">
-      <DependentUpon>Fluxgate.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Utils\Graph.cs" />
-    <Compile Include="Utils\KpIndexReader.cs" />
     <Compile Include="UI\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
