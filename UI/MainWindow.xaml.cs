@@ -15,6 +15,7 @@ using System.Xml;
 using DateTimePicker = Xceed.Wpf.Toolkit.DateTimePicker;
 using static MuonDetectorReader.Graph;
 using System.Threading.Tasks;
+using MuonDetectorReader.Utils;
 
 namespace MuonDetectorReader
 { 
@@ -25,11 +26,13 @@ namespace MuonDetectorReader
         List<double> Temp = new List<double>();
         List<double> Press = new List<double>();
         List<double> RawCounts = new List<double>();
+        List<double> oldRawCounts = new List<double>();
         List<DateTime> Dates = new List<DateTime>();
         List<double> CorrCounts = new List<double>();
         List<double> FullCorrCounts = new List<double>();
 
         public static string GraphTitle = "Grafico";
+        public static string ActiveGraph = "";
 
         string SettingFilePath;
 
@@ -42,7 +45,6 @@ namespace MuonDetectorReader
             SettingFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CRD1 Reader\\Settings.xml");
 
             OpenSettingsFile();
-
         }
 
         private void PressBoxTextChanged(object sender, TextChangedEventArgs e)
@@ -109,6 +111,8 @@ namespace MuonDetectorReader
 
                     RemoveDuplicates();
 
+                    oldRawCounts = new List<double>(RawCounts);
+
                     if (BetaBox.Text != "nessuno" && double.TryParse(PressBox.Text, out double refPress))
                     {
                         PmP0.Clear();
@@ -134,6 +138,7 @@ namespace MuonDetectorReader
 
                     BetaPanel.IsEnabled = true;
                     ShowHideData.IsEnabled = true;
+
                 }
                 catch// (Exception ex)
                 {
@@ -237,6 +242,12 @@ namespace MuonDetectorReader
                 StreamWriter sw = new StreamWriter(path);
 
                 sw.WriteLine("Export dei dati: P0 = {0} ; Beta = {1}", refPress, Beta);
+
+                if (OutlierBox.IsChecked == true)
+                    sw.WriteLine("Rimozione Outliers: Attiva (" + OutlierSlider.Value.ToString("F") + "σ)");
+                else
+                    sw.WriteLine("Rimozione Outliers: Disattiva");
+
                 sw.WriteLine("File di origine => " + FileName);
                 sw.WriteLine("Formato dei dati : ");
                 sw.WriteLine("Data\tTemp\tPress\tCont.Grezzi\tCont.Corr. P\tCont.Corr. PT");
@@ -266,6 +277,12 @@ namespace MuonDetectorReader
                 MainGrid.Children.RemoveAt(3);
 
             TempCorrBox.IsEnabled = false;
+            OutlierBox.IsEnabled = false;
+
+            if(OutlierBox.IsChecked == true)
+                OutlierSlider.IsEnabled = true;
+            else
+                OutlierSlider.IsEnabled = false;
 
             switch (tag)
             {
@@ -291,40 +308,52 @@ namespace MuonDetectorReader
                     }
                     else
                         MessageBox.Show("Inserire un valore valido di Pressione");
-                    DatePickerPanel.IsEnabled = Slider.IsEnabled = false;
+                    OutlierBox.IsEnabled = true;
+                    DatePickerPanel.IsEnabled = AvgSlider.IsEnabled = false;
                     break;
                 case "CG":
                     GraphTitle = "Conteggi Grezzi";
-                    MainGrid.Children.Add(GraphData(Dates, RawCounts, Color.FromArgb(180, 0, 120, 0), "Conteggi", SmoothValue.Text == "OFF"? false : true, (uint)Slider.Value));;
-                    DatePickerPanel.IsEnabled = Slider.IsEnabled = true;
-                    if((uint)Slider.Value != Slider.Minimum)
+                    MainGrid.Children.Add(GraphData(Dates, RawCounts, Color.FromArgb(180, 0, 120, 0), "Conteggi", SmoothValue.Text == "OFF"? false : true, (uint)AvgSlider.Value));;
+                    OutlierBox.IsEnabled = DatePickerPanel.IsEnabled = AvgSlider.IsEnabled = true;
+                    if((uint)AvgSlider.Value != AvgSlider.Minimum)
                         ShowHideData.IsEnabled = true;
                     break;
                 case "CC":
                     if (TempCorrBox.IsChecked == false)
                     {
                         GraphTitle = "Conteggi Corretti in Pressione";
-                        MainGrid.Children.Add(GraphData(Dates, CorrCounts, Color.FromArgb(150, 50, 110, 200), "Conteggi", SmoothValue.Text == "OFF" ? false : true, (uint)Slider.Value, HorLine:true));
+                        MainGrid.Children.Add(GraphData(Dates, CorrCounts, Color.FromArgb(150, 50, 110, 200), "Conteggi", SmoothValue.Text == "OFF" ? false : true, (uint)AvgSlider.Value, HorLine:true));
                     }
                     else
                     {
                         GraphTitle = "Conteggi Corretti in Pressione e Temp.";
-                        MainGrid.Children.Add(GraphData(Dates, FullCorrCounts, Color.FromArgb(150, 50, 110, 200), "Conteggi", SmoothValue.Text == "OFF" ? false : true, (uint)Slider.Value, HorLine: true));
+                        MainGrid.Children.Add(GraphData(Dates, FullCorrCounts, Color.FromArgb(150, 50, 110, 200), "Conteggi", SmoothValue.Text == "OFF" ? false : true, (uint)AvgSlider.Value, HorLine: true));
                     }
-                    DatePickerPanel.IsEnabled = TempCorrBox.IsEnabled = Slider.IsEnabled = true;
-                    if((uint)Slider.Value != Slider.Minimum)
+
+                    OutlierBox.IsEnabled = DatePickerPanel.IsEnabled = TempCorrBox.IsEnabled = AvgSlider.IsEnabled = true;
+                    if((uint)AvgSlider.Value != AvgSlider.Minimum)
                         ShowHideData.IsEnabled = true;
                     break;
                 case "SIGMA":
                     GraphTitle = "Scarto dei Conteggi Corr. in Pressione";
                     MainGrid.Children.Add(SigmaTwo(Dates, CorrCounts));
-                    DatePickerPanel.IsEnabled = true;
-                    Slider.IsEnabled = false;
+                    OutlierBox.IsEnabled = DatePickerPanel.IsEnabled = true;
+                    AvgSlider.IsEnabled = false;
                     ShowHideData.IsEnabled = false;
+                    break;
+                case "Temp":
+                    DG_T.IsChecked = true;
+                    DoubleGraphOK_Click(null, null);
+                    DG_T.IsChecked = false;
+                    break;
+                case "Press":
+                    DG_P.IsChecked = true;
+                    DoubleGraphOK_Click(null, null);
+                    DG_P.IsChecked = false;
                     break;
                 default: return;
             }
-
+            ActiveGraph = tag;
             DatePickerResetDate();
 
             if (MainGrid.Children.Count >= 4)
@@ -350,8 +379,9 @@ namespace MuonDetectorReader
                     MainGrid.Children.RemoveAt(3);
 
                 TempCorrBox.IsEnabled = false;
-                Slider.IsEnabled = false;
+                AvgSlider.IsEnabled = false;
                 ShowHideData.IsEnabled = false;
+                OutlierSlider.IsEnabled = OutlierBox.IsEnabled = false;
 
                 if (DG_CG.IsChecked == true)
                 {
@@ -388,7 +418,8 @@ namespace MuonDetectorReader
                 Graph_Click(new Button() { Tag = DG_CG.IsChecked == true ? "CG" : "CC" }, null);
             }
             
-            DoubleGraph_Click(null, null);
+            if (sender != null)
+                DoubleGraph_Click(null, null);
 
         }
 
@@ -419,7 +450,7 @@ namespace MuonDetectorReader
                 if (pv.Model.Annotations.Count > 0)
                 {
                     pv.Model.Annotations.RemoveAt(0);
-                    pv.Model.Annotations.Insert(0, Smoothed(dp, (uint)Slider.Value));
+                    pv.Model.Annotations.Insert(0, Smoothed(dp, (uint)AvgSlider.Value));
                 }
 
                 pv.InvalidatePlot(true);
@@ -431,6 +462,29 @@ namespace MuonDetectorReader
                 }
             }
 
+        }
+
+        private void OutliersBox_Click(object sender, RoutedEventArgs e)
+        {
+            GenerateCorrCounts();
+            Graph_Click(new Button() { Tag = ActiveGraph }, null);
+
+            if (OutlierBox.IsChecked == false)
+                OutlierSlider.IsEnabled = false;
+            else 
+                OutlierSlider.IsEnabled = true;
+
+        }
+
+        private void OutlierSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            OutlierSigmaValue.Text = OutlierSlider.Value.ToString("F") + "σ";
+
+            if (OutlierBox.IsChecked == true)
+            {
+                GenerateCorrCounts();
+                Graph_Click(new Button() { Tag = ActiveGraph }, null);
+            }
         }
 
         private static readonly Regex _regexFile = new Regex("[a-z]+");
@@ -449,13 +503,16 @@ namespace MuonDetectorReader
             do
             {
                     str = sr.ReadLine();
-                if (str.Contains(" * ") && (str.Contains("/") || str.Contains("-")) && !_regexFile.IsMatch(str))
+                if ((str.Contains(" * ") || str.Contains(",")) && (str.Contains("/") || str.Contains("-")) && !_regexFile.IsMatch(str))
                 {
                     if (str.Contains("-"))
                         str = str.Replace("-", "/");
 
                     if (str.Contains("   "))
                         str = str.Replace("   ", "");
+
+                    if (str.Contains(","))
+                        str = str.Replace(",", " * ");
 
                     Dates.Add(Convert.ToDateTime(str.Remove(str.IndexOf("*")-1)));
 
@@ -478,6 +535,7 @@ namespace MuonDetectorReader
 
             if (Dates.Count == 0 || Temp.Count == 0 || Press.Count == 0 || RawCounts.Count == 0)
                 throw new Exception("Formato errato");
+
         }
 
 
@@ -502,12 +560,28 @@ namespace MuonDetectorReader
                 RawCounts.RemoveAt(index);
             }
         }
-    
+
+
+        public double GetTemperature(DateTime Date)
+        {
+            const double XC = -535250.20816;
+            const double A = 10.28654;
+            const double w = 203.63014;
+            const double y0 = 20.93909;
+
+            double dDate = Date.ToOADate() + 2415018.5; // Julian Day
+            return y0 + A * Math.Sin(Math.PI * (dDate - XC) / w);
+        }
 
         private void GenerateCorrCounts()
         {
             if (RawCounts.Count != 0 && PmP0.Count != 0)
             {
+                if (OutlierBox.IsChecked == true)
+                    RawCounts = OutlierRemover.RemoveOutliersSigma(oldRawCounts, OutlierSlider.Value); 
+                else
+                    RawCounts = new List<double>(oldRawCounts);
+
                 CorrCounts.Clear();
                 FullCorrCounts.Clear();
 
@@ -576,7 +650,7 @@ namespace MuonDetectorReader
             }
         }
 
-        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void AvgSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (sender != null && MainGrid.Children.Count >= 4)
             {
@@ -586,12 +660,12 @@ namespace MuonDetectorReader
                 if (pv.Model.Annotations.Count > 0)
                     pv.Model.Annotations.RemoveAt(0);
 
-                if ((uint)Slider.Value != Slider.Minimum)
+                if ((uint)AvgSlider.Value != AvgSlider.Minimum)
                 {
-                    pv.Model.Annotations.Insert(0, Smoothed(dp, (uint)Slider.Value));
+                    pv.Model.Annotations.Insert(0, Smoothed(dp, (uint)AvgSlider.Value));
 
 
-                    SmoothValue.Text = ((uint)Slider.Value).ToString() + "pt";
+                    SmoothValue.Text = ((uint)AvgSlider.Value).ToString() + "pt";
 
                     if (ShowHideData != null)
                         if (ShowHideData.IsEnabled == false)

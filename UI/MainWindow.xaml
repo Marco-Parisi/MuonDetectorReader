@@ -62,25 +62,26 @@
 
             <Grid x:Name="MainGrid">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="95"/>
+                    <RowDefinition Height="{StaticResource MenuHeight}"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
                 <StackPanel HorizontalAlignment="Center">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 
-                        <StackPanel>
-                            <Button Margin="0, 48, 10,10" Click="Button_Click" Width="80" Height="24" 
-                                    BorderThickness="1" BorderBrush="Black" Background="WhiteSmoke">
+                        <StackPanel VerticalAlignment="Center">
+                            <Button Margin="0, 10, 10, 10" Click="Button_Click" Width="80" Height="24" 
+                                    BorderThickness="1" BorderBrush="Black" Background="WhiteSmoke"
+                                    VerticalAlignment="Center">
                                 Apri File
                             </Button>
                         </StackPanel>
-                        <Line Y1="23" Y2="95" Stroke="Black" HorizontalAlignment="Center" StrokeThickness="0.5"/>
+                        <Line Y1="23" Y2="{StaticResource DoubleMenuHeight}" Stroke="Black" HorizontalAlignment="Center" StrokeThickness="0.5"/>
 
                         <StackPanel>
                             <TextBlock Text="Correzione Pressione" FontSize="14" Margin="2" TextAlignment="Center" HorizontalAlignment="Center"/>
                             <Line X1="0" X2="210" Stroke="Black" HorizontalAlignment="Left" StrokeThickness="0.5"/>
-                            <StackPanel x:Name="BetaPanel" IsEnabled="False" Margin="10,0">
+                            <StackPanel x:Name="BetaPanel" IsEnabled="False" Margin="5,5,5,0">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <TextBlock Text="Valore β salvato :" Margin="0,3" VerticalAlignment="Center"
                                                FontWeight="SemiBold"/>
@@ -101,14 +102,14 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <Line Y1="23" Y2="95" Stroke="Black" HorizontalAlignment="Center" StrokeThickness="0.5"/>
+                        <Line Y1="0" Y2="{StaticResource DoubleMenuHeight}" Stroke="Black" HorizontalAlignment="Center" StrokeThickness="0.5"/>
 
                         <StackPanel>
-                            <TextBlock Text="Grafici" FontSize="14" Margin="2" TextAlignment="Center" HorizontalAlignment="Center"/>
                             <Line X1="0" X2="465" Stroke="Black" HorizontalAlignment="Left" StrokeThickness="0.5"/>
-                            <StackPanel IsEnabled="False" Name="GraficiPanel" Margin="0,0,0,0" Orientation="Horizontal" Height="72">
+                            <StackPanel IsEnabled="False" Name="GraficiPanel" Margin="0,0,0,0" Orientation="Horizontal" Height="{StaticResource DoubleMenuHeight}">
                                 <Grid Margin="15,0,10,0">
                                     <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
                                         <RowDefinition Height="*"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
@@ -116,22 +117,39 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Button  Click="Graph_Click" Width="80" Height="24" Tag="CG" Background="#FF007800" Foreground="White">
+                                    <Button Grid.Row="0" Click="Graph_Click" Width="80" Height="24" Tag="CG" Background="#FF007800" Foreground="White">
                                         Cont. Grezzi
                                     </Button>
-                                    <Button Grid.Column="2" Click="Graph_Click" Width="85" Height="24" Tag="CC" Background="#FF326EC8" Foreground="White">
+                                    <Button Grid.Row="0" Grid.Column="2" Click="Graph_Click" Width="85" Height="24" Tag="CC" Background="#FF326EC8" Foreground="White">
                                         Cont. Corretti
                                     </Button>
-                                    <Button Grid.Row="1" Grid.Column="1" Margin="5,0" Click="DoubleGraph_Click" Width="90" Height="24" Background="DarkOrange" FontWeight="Bold">
+                                    <Button Grid.Row="1" Click="Graph_Click" Width="80" Height="24" Tag="Press" Background="#FFDF9010" Foreground="White">
+                                        Pressione
+                                    </Button>
+                                    <Button Grid.Row="1" Grid.Column="2" Click="Graph_Click" Width="85" Height="24" Tag="Temp" Background="#FF9F20D8" Foreground="White">
+                                        Temperatura
+                                    </Button>
+                                    <Button Grid.Row="2" Grid.Column="1" Margin="5,0" Click="DoubleGraph_Click" Width="90" Height="24" Background="LightBlue" FontWeight="Bold">
                                         Altro Grafico...
                                     </Button>
-                                    <Button Grid.Row="1" Click="Graph_Click" Width="75" Height="24" HorizontalAlignment="Left" Tag="SIGMA" Background="IndianRed" Foreground="White">
+                                    <Button Grid.Row="2" Click="Graph_Click" Width="75" Height="24" HorizontalAlignment="Left" Tag="SIGMA" Background="IndianRed" Foreground="White">
                                         Scarto 2σ
                                     </Button>
                                 </Grid>
-                                <StackPanel>
-                                    <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="2*"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel Grid.RowSpan="2" HorizontalAlignment="Left" Orientation="Horizontal">
                                         <StackPanel VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
+                                                <!--<ToggleButton Width="130" Height="20" Content="Corr. Temperatura"/>-->
+                                                <TextBlock Text="  Rimuovi Outliers "/>
+                                                <CheckBox Width="18" Name="OutlierBox" IsEnabled="False" Click="OutliersBox_Click"/>
+                                            </StackPanel>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
                                                 <!--<ToggleButton Width="130" Height="20" Content="Corr. Temperatura"/>-->
                                                 <TextBlock Text="Corr. Temperatura "/>
@@ -143,18 +161,31 @@
                                                 <CheckBox Width="18" Name="ShowHideData" IsEnabled="True" Click="ShowHideData_Click"/>
                                             </StackPanel>
                                         </StackPanel>
-                                        <StackPanel Orientation="Vertical" Margin="14 5 0 1">
-                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                <TextBlock Text="Media Mobile: "/>
-                                                <TextBlock x:Name="SmoothValue" Text="6pt"/>
-                                            </StackPanel>
-                                            <Slider Width="100" ValueChanged="Slider_ValueChanged"
-                                                    Name="Slider" IsSnapToTickEnabled="True" IsEnabled="False"
-                                                    TickFrequency="2" Minimum="2" Maximum="48" Value="6"
+                                        <StackPanel>
+                                            <StackPanel Orientation="Vertical" Margin="14 5 0 1">
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <TextBlock Text="Outlier Sigma: "/>
+                                                    <TextBlock x:Name="OutlierSigmaValue" Text="2σ"/>
+                                                </StackPanel>
+                                                <Slider Width="100" ValueChanged="OutlierSlider_ValueChanged"
+                                                    Name="OutlierSlider" IsSnapToTickEnabled="True" IsEnabled="False"
+                                                    TickFrequency="0.25" Minimum="0.25" Maximum="5" Value="2"
                                                     TickPlacement="None"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Vertical" Margin="14 5 0 1">
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <TextBlock Text="Media Mobile: "/>
+                                                    <TextBlock x:Name="SmoothValue" Text="6pt"/>
+                                                </StackPanel>
+                                                <Slider Width="100" ValueChanged="AvgSlider_ValueChanged"
+                                                        Name="AvgSlider" IsSnapToTickEnabled="True" IsEnabled="False"
+                                                        TickFrequency="2" Minimum="2" Maximum="48" Value="6"
+                                                        TickPlacement="None"/>
+                                            </StackPanel>
+
                                         </StackPanel>
                                     </StackPanel>
-                                    <StackPanel x:Name="DatePickerPanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="-5 5 0 0">
+                                    <StackPanel Grid.Row="2" x:Name="DatePickerPanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="-5,3">
                                         <TextBlock Text="Dal: " VerticalAlignment="Center" Visibility="Collapsed"/>
                                         <!--<local:CustomDatePicker Visibility="Collapsed" x:Name="DateFrom" WatermarkText="Data inizio" Focusable="False" Width="95"/>-->
                                         <ext:DateTimePicker x:Name="DateFrom" Focusable="False" Width="125" Margin="0 0 5 0" FontSize="{StaticResource FixedFontSize}"
@@ -164,11 +195,11 @@
                                         <ext:DateTimePicker x:Name="DateTo" Focusable="False" Width="125" Margin="5 0 0 0" FontSize="{StaticResource FixedFontSize}"
                                                             ClipValueToMinMax="True" Format="Custom" FormatString="dd/MM/yy HH:mm"/>
                                     </StackPanel>
-                                </StackPanel>
+                                </Grid>
                             </StackPanel>
                         </StackPanel>
 
-                        <Line Y1="23" Y2="95" Stroke="Black" HorizontalAlignment="Center" StrokeThickness="0.5"/>
+                        <Line Y1="0" Y2="{StaticResource DoubleMenuHeight}" Stroke="Black" HorizontalAlignment="Center" StrokeThickness="0.5"/>
 
                         <StackPanel Margin="10,25, 0, 0" IsEnabled="False" Name="ExportPanel">
                             <Button Margin="0,0,0,5" Click="ExportGraph_Click" Width="90" Height="24">
