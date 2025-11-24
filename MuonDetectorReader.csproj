@@ -32,8 +32,8 @@
     <PublisherName>Marco Parisi</PublisherName>
     <SuiteName>Muon Detector Reader</SuiteName>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.2.0.0</ApplicationVersion>
+    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationVersion>1.2.0.1</ApplicationVersion>
     <UseApplicationTrust>true</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -178,7 +178,14 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="UI\CustomDatePicker.cs" />
+    <Compile Include="UI\Fluxgate.xaml.cs">
+      <DependentUpon>Fluxgate.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Utils\OutlierRemover.cs" />
+    <Page Include="UI\Fluxgate.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UI\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

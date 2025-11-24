@@ -26,7 +26,7 @@ namespace MuonDetectorReader
 
         private static double yIntercept=0;
 
-        public static Grid GraphData(List<DateTime> Dates, List<double> data1, Color color, string ParName, bool Smooth = false, uint Window = 3, int Div = 40, bool HorLine = false)
+        public static Grid GraphData(List<DateTime> Dates, List<double> data1, Color color, string ParName, bool Smooth = false, uint Window = 3, int Div = 40, bool HorLine = false, bool dot = false)
         {
             SolidColorBrush brC = new SolidColorBrush(color);
 
@@ -75,10 +75,10 @@ namespace MuonDetectorReader
             {
                 CanTrackerInterpolatePoints = false,
                 Color = oxC,
-                LineStyle = LineStyle.Solid,
-                MarkerType = MarkerType.None,
-                MarkerSize = 1.5,
-                MarkerFill = OxyColor.FromArgb(180, 0, 0, 0),
+                LineStyle = dot ? LineStyle.None : LineStyle.Solid,
+                MarkerType = dot ? MarkerType.Circle : MarkerType.None,
+                MarkerSize = 3,
+                MarkerFill = dot ? oxC : OxyColor.FromArgb(180, 0, 0, 0),
                 MarkerStrokeThickness = 0,
                 //MarkerStroke = OxyColor.FromArgb(200, 50, 50, 50),
             };

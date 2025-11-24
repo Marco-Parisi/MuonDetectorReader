@@ -469,6 +469,8 @@ namespace MuonDetectorReader
             GenerateCorrCounts();
             Graph_Click(new Button() { Tag = ActiveGraph }, null);
 
+            ShowHideData.IsChecked = false;
+
             if (OutlierBox.IsChecked == false)
                 OutlierSlider.IsEnabled = false;
             else 
@@ -910,5 +912,11 @@ namespace MuonDetectorReader
             Close();
         }
 
+        private void Fluxgate_Click(object sender, RoutedEventArgs e)
+        {
+            Fluxgate FluxgateWindow = new Fluxgate();
+            FluxgateWindow.Show();
+
+        }
     }
 }

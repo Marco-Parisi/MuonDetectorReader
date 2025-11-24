@@ -75,6 +75,15 @@
                                     VerticalAlignment="Center">
                                 Apri File
                             </Button>
+                            <Button Visibility="Visible" Margin="0, 6, 10, 0" Click="Fluxgate_Click" Width="70" Height="24" Foreground="White">
+                                Fluxgate
+                                <Button.Background>
+                                    <LinearGradientBrush>
+                                        <GradientStop Offset="0.0" Color="DodgerBlue"/>
+                                        <GradientStop Offset="0.95" Color="Blue"/>
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                            </Button>
                         </StackPanel>
                         <Line Y1="23" Y2="{StaticResource DoubleMenuHeight}" Stroke="Black" HorizontalAlignment="Center" StrokeThickness="0.5"/>
 
@@ -146,17 +155,14 @@
                                     <StackPanel Grid.RowSpan="2" HorizontalAlignment="Left" Orientation="Horizontal">
                                         <StackPanel VerticalAlignment="Center">
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
-                                                <!--<ToggleButton Width="130" Height="20" Content="Corr. Temperatura"/>-->
                                                 <TextBlock Text="  Rimuovi Outliers "/>
                                                 <CheckBox Width="18" Name="OutlierBox" IsEnabled="False" Click="OutliersBox_Click"/>
                                             </StackPanel>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
-                                                <!--<ToggleButton Width="130" Height="20" Content="Corr. Temperatura"/>-->
                                                 <TextBlock Text="Corr. Temperatura "/>
                                                 <CheckBox Width="18" Name="TempCorrBox" IsEnabled="False" Click="TempCorrBox_Click"/>
                                             </StackPanel>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
-                                                <!--<ToggleButton Width="130" Height="20" Content="Corr. Temperatura"/>-->
                                                 <TextBlock Text="Maschera Dati "/>
                                                 <CheckBox Width="18" Name="ShowHideData" IsEnabled="True" Click="ShowHideData_Click"/>
                                             </StackPanel>
