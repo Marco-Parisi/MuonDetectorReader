@@ -70,7 +70,6 @@ namespace MuonDetectorReader
                 Foreground = new SolidColorBrush(Colors.Black),               
             };
 
-
             FunctionSeries fs = new FunctionSeries()
             {
                 CanTrackerInterpolatePoints = false,
@@ -82,6 +81,7 @@ namespace MuonDetectorReader
                 MarkerStrokeThickness = 0,
                 //MarkerStroke = OxyColor.FromArgb(200, 50, 50, 50),
             };
+            fs.Decimator = Decimator.Decimate;
 
 
             int i = 0;
@@ -159,7 +159,8 @@ namespace MuonDetectorReader
                 StringFormat = "yyyy/MM/dd HH:mm",
                 Title = "Data",
                 AxisTitleDistance = 10,
-                IntervalLength = 25,
+                IntervalLength = 30,
+                IntervalType = DateTimeIntervalType.Days,
                 MajorGridlineStyle = LineStyle.Dash,
                 MinorGridlineStyle = LineStyle.Dot,
                 Angle = -35
@@ -253,6 +254,7 @@ namespace MuonDetectorReader
                     YAxisKey = "yAxis2",
                     TrackerFormatString = "Retta Mobile"
                 };
+                fs2.Decimator = Decimator.Decimate;
 
                 AvgLine(fs.Points).Points.ForEach(p => fs2.Points.Add(p));
 
@@ -371,11 +373,10 @@ namespace MuonDetectorReader
                 Color = OxyColor.FromArgb(oxC.Color.A, oxC.Color.R, oxC.Color.G, oxC.Color.B),
                 LineStyle = LineStyle.Solid,
                 MarkerType = MarkerType.None,
-                MarkerSize = 1.5,
-                MarkerStroke = OxyColor.FromArgb(180, 0, 0, 0),
                 YAxisKey = "yAxis",
                 TrackerFormatString = dataTitle1 + " : {Y:0.#}" + Environment.NewLine + "Data : {2:yyyy/MM/dd}" + Environment.NewLine + "Ora: {2:HH:mm:ss}"
             };
+            fs.Decimator = Decimator.Decimate;
 
             FunctionSeries fs2 = new FunctionSeries()
             {
@@ -383,11 +384,10 @@ namespace MuonDetectorReader
                 Color = OxyColor.FromArgb(oxC2.Color.A, oxC2.Color.R, oxC2.Color.G, oxC2.Color.B),
                 LineStyle = LineStyle.Solid,
                 MarkerType = MarkerType.None,
-                MarkerSize = 1.5,
-                MarkerStroke = OxyColor.FromArgb(180, 0, 0, 0),
                 YAxisKey = "yAxis2",
                 TrackerFormatString = dataTitle2 + " : {Y:0.#}" + Environment.NewLine + "Data : {2:yyyy-MM-dd}" + Environment.NewLine + "Ora: {2:HH:mm:ss}"
             };
+            fs2.Decimator = Decimator.Decimate;
 
             int i = 0;
 
@@ -474,11 +474,8 @@ namespace MuonDetectorReader
                 _logCount.Clear();
                 _RCount.ForEach(count =>
                 {
-                    //if (!((count) < _RCountMean - (_RCountMean / 2)))
-                    {
-                        _logCount.Add(Math.Log(_RCount[_RCount.IndexOf(count)]));
-                        _PmP0.Add(PmP0[_RCount.IndexOf(count)]);
-                    }
+                    _logCount.Add(Math.Log(_RCount[_RCount.IndexOf(count)]));
+                    _PmP0.Add(PmP0[_RCount.IndexOf(count)]);
                 });
 
                 if (_logCount.Count > 0)
@@ -487,14 +484,11 @@ namespace MuonDetectorReader
 
                     refPress = _refPress;
 
-                    return GraphBeta(_PmP0, _logCount, Colors.Red);
+                    return GraphBeta(_PmP0, _logCount, Colors.CadetBlue);
                 }
                 else
                     return new Grid();
             }
-           // else
-            //    return GraphBeta(_PmP0, _logCount, Colors.Red);
-
         }
 
         public static Grid GraphBeta(List<double> press, List<double> logN, Color color)
@@ -527,11 +521,12 @@ namespace MuonDetectorReader
             {
                 Color = OxyColor.FromArgb(oxC.Color.A, oxC.Color.R, oxC.Color.G, oxC.Color.B),
                 LineStyle = LineStyle.None,
-                MarkerFill = OxyColor.FromArgb(oxC.Color.A, oxC.Color.R, oxC.Color.G, oxC.Color.B),
+                //MarkerFill = OxyColor.FromArgb(oxC.Color.A, oxC.Color.R, oxC.Color.G, oxC.Color.B),
                 MarkerType = MarkerType.Square,
-                MarkerSize = 3,
-                MarkerStroke = OxyColor.FromArgb(180, 50, 50, 50),
+                //MarkerSize = 3,
+                //MarkerStroke = OxyColor.FromArgb(180, 50, 50, 50),
             };
+            fs.Decimator = Decimator.Decimate;
 
             int i = 0;
 
@@ -586,14 +581,15 @@ namespace MuonDetectorReader
                 IntervalLength = 60,
                 MajorGridlineStyle = LineStyle.Solid,
                 MinorGridlineStyle = LineStyle.None,
-                Minimum = fs.Points.Min(p => p.X) - (fs.Points.Min(p => p.X) / 200),
-                Maximum = fs.Points.Max(p => p.X) + (fs.Points.Max(p => p.X) / 200)
+                Minimum = fs.Points.Min(p => p.X) - (fs.Points.Min(p => p.X) / 10),
+                Maximum = fs.Points.Max(p => p.X) + (fs.Points.Max(p => p.X) / 10)
             };
 
             FunctionSeries TrendFS = new FunctionSeries()
             {
-                Color = OxyColors.Blue,
+                Color = OxyColors.Red,
                 LineStyle = LineStyle.Dash,
+                StrokeThickness = 4,
             };
 
             TrendFS.Points.Add(new DataPoint(press.Min(), press.Min() * Beta + yIntercept));
@@ -645,26 +641,17 @@ namespace MuonDetectorReader
 
         public static double CalcTempCoeff(List<double> temp, List<double> counts)
         {
-            //double TempMean = temp.Average();
             double countMean = counts.Average();
 
             List<double> Temp = new List<double>();
             List<double> Count = new List<double>();
             temp.ForEach(t => Temp.Add(t));
-            counts.ForEach(c => Count.Add(c / countMean));
+            counts.ForEach(c => Count.Add(Math.Log(c)));
 
             LinearRegression(Temp, Count, out double m, out double s_m, out double q);
 
             Temp.Clear();
             Count.Clear();
-
-            //List<double> CountMeanCount = new List<double>();
-            //temp.ForEach(t => TempDiff.Add((t - TempMean)*corrCounts[temp.IndexOf(t)]));
-
-            //Regression(TempDiff, corrCounts, out double m, out double q);
-
-            //TempDiff.Clear();
-            //CountMeanCount.Clear();
 
             return m;
 
@@ -719,9 +706,10 @@ namespace MuonDetectorReader
                 LineStyle = LineStyle.None,
                 MarkerType = MarkerType.Circle,
                 MarkerSize = 2.5,
-                MarkerStroke = OxyColor.FromArgb(170, 0, 0, 0),
+                //MarkerStroke = OxyColor.FromArgb(170, 0, 0, 0),
                 TrackerFormatString = "Cont. : {Y:0.}" + Environment.NewLine + "Data : {2:yyyy-MM-dd}" + Environment.NewLine + "Ora: {2:HH:mm:ss}"
             };
+            fs.Decimator = Decimator.Decimate;
 
             int i = 0;
 
@@ -791,6 +779,7 @@ namespace MuonDetectorReader
                 Title = "Data",
                 AxisTitleDistance = 10,
                 IntervalLength = 30,
+                IntervalType = DateTimeIntervalType.Days,
                 MajorGridlineStyle = LineStyle.Dot,
                 MinorGridlineStyle = LineStyle.Dot,
                 MajorGridlineColor = yAxis.MajorGridlineColor,
@@ -1041,6 +1030,7 @@ namespace MuonDetectorReader
                 MarkerStrokeThickness = 0,
                 TrackerFormatString = (pv.Model.Series.First() as FunctionSeries).TrackerFormatString
             };
+            fs.Decimator = Decimator.Decimate;
 
             int i = 0;
 

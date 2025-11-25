@@ -140,7 +140,7 @@ namespace MuonDetectorReader
                     ShowHideData.IsEnabled = true;
 
                 }
-                catch// (Exception ex)
+                catch (Exception ex)
                 {
 
                     BetaPanel.IsEnabled = false;
@@ -180,7 +180,7 @@ namespace MuonDetectorReader
                         LostData.Add("• Il " + Dates[i + 1].ToString("dd/MM/yyyy 'dalle ore' HH:mm") + Dates[i].ToString(" 'alle ore' HH:mm"));
                     else
                         LostData.Add("• Il " + Dates[i + 1].ToString("dd/MM/yyyy 'ore' HH:mm") + " e il " + Dates[i].ToString("dd/MM/yyyy 'ore' HH:mm"));
-                    LostData[LostData.Count - 1] += " → " + timediff.TotalHours.ToString() + " ore";
+                    LostData[LostData.Count - 1] += " → " + (timediff.TotalHours-1).ToString() + " ore";
                 }
             }
 
@@ -316,7 +316,11 @@ namespace MuonDetectorReader
                     MainGrid.Children.Add(GraphData(Dates, RawCounts, Color.FromArgb(180, 0, 120, 0), "Conteggi", SmoothValue.Text == "OFF"? false : true, (uint)AvgSlider.Value));;
                     OutlierBox.IsEnabled = DatePickerPanel.IsEnabled = AvgSlider.IsEnabled = true;
                     if((uint)AvgSlider.Value != AvgSlider.Minimum)
+                    {
                         ShowHideData.IsEnabled = true;
+                        if (ShowHideData.IsChecked == true)
+                            ShowHideData_Click(1, null);
+                    }
                     break;
                 case "CC":
                     if (TempCorrBox.IsChecked == false)
@@ -331,8 +335,12 @@ namespace MuonDetectorReader
                     }
 
                     OutlierBox.IsEnabled = DatePickerPanel.IsEnabled = TempCorrBox.IsEnabled = AvgSlider.IsEnabled = true;
-                    if((uint)AvgSlider.Value != AvgSlider.Minimum)
+                    if ((uint)AvgSlider.Value != AvgSlider.Minimum)
+                    {
                         ShowHideData.IsEnabled = true;
+                        if (ShowHideData.IsChecked == true)
+                            ShowHideData_Click(1, null);
+                    }
                     break;
                 case "SIGMA":
                     GraphTitle = "Scarto dei Conteggi Corr. in Pressione";
@@ -587,68 +595,23 @@ namespace MuonDetectorReader
                 CorrCounts.Clear();
                 FullCorrCounts.Clear();
 
-                double Temp_avg = Temp.Average();
+                List<DateTime> DT = new List<DateTime>();
+                Dates.ForEach(date => DT.Add(Convert.ToDateTime(date)));
 
                 for (int i = 0; i < PmP0.Count; i++)
                     CorrCounts.Add(Math.Exp(-Beta * PmP0[i])  * RawCounts[i]);
 
-                //TemperatureModel model = new TemperatureModel();
+
+                double Temp_avg = Temp.Average();
+
                 List<double> TmT0 = new List<double>();
+                Temp.ForEach(t => TmT0.Add(t - Temp_avg));
 
-                List<DateTime> DT = new List<DateTime>();
-                Dates.ForEach(date => DT.Add(Convert.ToDateTime(date)));
-
-
-                double tempDayMean = 0;
-                int meanCount = 0;
-                for (int i = 0; i < DT.Count; i++)
-                {
-                    int ip1 = i < DT.Count - 1 ? i + 1 : i;
-
-                    if (DT[i].Day == DT[ip1].Day)
-                    {
-                        tempDayMean += Temp[i];//model.GetTemperature(DT[i]);//
-                        meanCount++;
-                    }
-                    else
-                    {
-                        tempDayMean /= meanCount;
-                        for (int n = meanCount; n >= 0; n--)
-                            TmT0.Add(Temp[i - n] - tempDayMean);
-
-                        tempDayMean = meanCount = 0;
-                    }
-                }
-
-                tempDayMean /= meanCount;
-                int c = TmT0.Count;
-
-                for (int n = meanCount-1; n >= 0; n--)
-                    if (TmT0.Count < RawCounts.Count)
-                        TmT0.Add(Temp[Math.Abs(c - n)] - tempDayMean);
-
-                //for (int i = 0; i < CorrCounts.Count; i++)
-                //    TmT0.Add(Temp[i] - Temp.Average());
-
-                double kT = CalcTempCoeff(TmT0, RawCounts);
+                //double aT = CalcTempCoeff(TmT0, RawCounts);
+                double kT = -0.00061418556768947339; // Valido solo per EKAR, stimato dai dati 2024_09 - 2025_11
 
                 for (int i = 0; i < CorrCounts.Count; i++)
-               //     FullCorrCounts.Add(CorrCounts[i] * Math.Exp(-kT * TmT0[i]));
-                FullCorrCounts.Add(CorrCounts[i] * ( 1-(kT * TmT0[i])));
-
-                //DayCutter();
-
-
-                //double avg = RawCounts.Average();
-                //double avg_corr = CorrCounts.Average();
-                //double avg_full = FullCorrCounts.Average();
-
-                //for (int i = 0; i < PmP0.Count; i++)
-                //{
-                //    RawCounts[i] /= avg;
-                //    CorrCounts[i] /= avg_corr;
-                //    FullCorrCounts[i] /= avg_full;
-                //}
+                  FullCorrCounts.Add(CorrCounts[i] * Math.Exp(-kT * TmT0[i]));
             }
         }
 

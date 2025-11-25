@@ -159,8 +159,24 @@
                                                 <CheckBox Width="18" Name="OutlierBox" IsEnabled="False" Click="OutliersBox_Click"/>
                                             </StackPanel>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
-                                                <TextBlock Text="Corr. Temperatura "/>
-                                                <CheckBox Width="18" Name="TempCorrBox" IsEnabled="False" Click="TempCorrBox_Click"/>
+                                                <TextBlock Text="Corr. Temperatura ">
+                                                    <TextBlock.ToolTip>
+                                                        <ToolTip Background="OrangeRed">
+                                                            <TextBlock Foreground="Black" FontWeight="Bold">
+                                                                Valido solo per il rilevatore EKAR
+                                                            </TextBlock>
+                                                        </ToolTip>
+                                                    </TextBlock.ToolTip>
+                                                </TextBlock>
+                                                <CheckBox Width="18" Name="TempCorrBox" IsEnabled="False" Click="TempCorrBox_Click">
+                                                    <CheckBox.ToolTip>
+                                                        <ToolTip Background="OrangeRed">
+                                                            <TextBlock Foreground="Black" FontWeight="Bold">
+                                                                Valido solo per il rilevatore EKAR
+                                                            </TextBlock>
+                                                        </ToolTip>
+                                                    </CheckBox.ToolTip>
+                                                </CheckBox>
                                             </StackPanel>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
                                                 <TextBlock Text="Maschera Dati "/>
