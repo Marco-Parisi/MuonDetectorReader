@@ -22,8 +22,6 @@ namespace MuonDetectorReader
         List<double> L_Count = new List<double>();
         List<double> Diff = new List<double>();
 
-        string GraphTitle;
-
         public Fluxgate()
         {
             InitializeComponent();
@@ -50,6 +48,7 @@ namespace MuonDetectorReader
                     ParseTXT(path);
                     Graph_Click(new Button() { Tag = "Diff" }, null);
                     GraphPanel.IsEnabled = true;
+                    MainWindow.FileName = path.Remove(0, path.LastIndexOf("\\") + 1);
                 }
                 catch
                 {
@@ -124,24 +123,24 @@ namespace MuonDetectorReader
 
             if (tag == "Upper")
             {
-                GraphTitle = "Upper Count";
+                MainWindow.GraphTitle = "Upper Count";
 
-                MainPanel.Children.Add(GraphData(Dates, U_Count, Colors.DodgerBlue, GraphTitle));
+                MainPanel.Children.Add(GraphData(Dates, U_Count, Colors.DodgerBlue, MainWindow.GraphTitle));
                 Grid.SetRow(MainPanel.Children[2], 1);
             }
             else if (tag == "Lower")
             {
-                GraphTitle = "Lower Count";
+                MainWindow.GraphTitle = "Lower Count";
 
-                MainPanel.Children.Add(GraphData(Dates, L_Count, Colors.DarkOrange, GraphTitle));
+                MainPanel.Children.Add(GraphData(Dates, L_Count, Colors.DarkOrange, MainWindow.GraphTitle));
                 Grid.SetRow(MainPanel.Children[2], 1);
 
             }
             else if (tag == "Diff")
             {
-                GraphTitle = "Diff Count";
+                MainWindow.GraphTitle = "Diff Count";
 
-                MainPanel.Children.Add(GraphData(Dates, Diff, Colors.MediumSeaGreen, GraphTitle));
+                MainPanel.Children.Add(GraphData(Dates, Diff, Colors.MediumSeaGreen, MainWindow.GraphTitle));
                 Grid.SetRow(MainPanel.Children[2], 1);
 
             }
@@ -157,7 +156,7 @@ namespace MuonDetectorReader
                 path += "\\Fluxgate - Grafici";
                 Directory.CreateDirectory(path);
                 folder = path;
-                path += "\\" + "Fluxgate_" + GraphTitle + " " + date + ".png";
+                path += "\\" + "Fluxgate_" + MainWindow.GraphTitle + " " + date + ".png";
 
                 PngExporter pngExporter = new PngExporter { Width = 1600, Height = 900, Background = OxyColors.White };
 

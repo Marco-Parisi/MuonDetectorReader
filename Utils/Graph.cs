@@ -581,8 +581,8 @@ namespace MuonDetectorReader
                 IntervalLength = 60,
                 MajorGridlineStyle = LineStyle.Solid,
                 MinorGridlineStyle = LineStyle.None,
-                Minimum = fs.Points.Min(p => p.X) - (fs.Points.Min(p => p.X) / 10),
-                Maximum = fs.Points.Max(p => p.X) + (fs.Points.Max(p => p.X) / 10)
+                Minimum = fs.Points.Min(p => p.X) - Math.Abs(fs.Points.Min(p => p.X) / 10),
+                Maximum = fs.Points.Max(p => p.X) + Math.Abs(fs.Points.Max(p => p.X) / 10)
             };
 
             FunctionSeries TrendFS = new FunctionSeries()

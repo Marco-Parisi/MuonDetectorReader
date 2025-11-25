@@ -608,7 +608,7 @@ namespace MuonDetectorReader
                 Temp.ForEach(t => TmT0.Add(t - Temp_avg));
 
                 //double aT = CalcTempCoeff(TmT0, RawCounts);
-                double kT = -0.00061418556768947339; // Valido solo per EKAR, stimato dai dati 2024_09 - 2025_11
+                double kT = -0.001599129876488731; // Valido solo per EKAR, stimato dai dati 2024_09 - 2025_11
 
                 for (int i = 0; i < CorrCounts.Count; i++)
                   FullCorrCounts.Add(CorrCounts[i] * Math.Exp(-kT * TmT0[i]));
