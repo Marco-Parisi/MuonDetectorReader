@@ -29,7 +29,7 @@ The processed data is displayed as interactive graphs, which can be saved as **P
     <font size=2><i>Pressure Corrected Counts</i></font>
   </p>
   <p align="center">
-    <img src="https://github.com/user-attachments/assets/cda7324b-0e37-42cc-a00b-afe31d2528a2" width="700"/>
+    <img src="https://github.com/user-attachments/assets/8fbcaa81-e701-410c-b9fd-b116b9c27102" width="700"/>
   </p>
 </div>
 
@@ -38,7 +38,7 @@ The processed data is displayed as interactive graphs, which can be saved as **P
     <font size=2><i>Pressure vs Raw Counts</i></font>
   </p>
   <p align="center">
-    <img src="https://github.com/user-attachments/assets/3b06ba92-5800-43f9-ab18-86ef6b84d57e" width="700"/>
+    <img src="https://github.com/user-attachments/assets/e82debce-d1be-4fab-b495-eaf168e29955" width="700"/>
   </p>
 </div>
 
@@ -47,7 +47,7 @@ The processed data is displayed as interactive graphs, which can be saved as **P
     <font size=2><i>Barometric Coefficient</i></font>
   </p>
   <p align="center">
-    <img src="https://github.com/user-attachments/assets/38554c49-8a4e-4074-a828-700423eb1cf2" width="700"/>
+    <img src="https://github.com/user-attachments/assets/f15b3d35-f2d0-4fc4-81ea-368b284459cc" width="700"/>
   </p>
 </div>
 
@@ -56,7 +56,6 @@ The processed data is displayed as interactive graphs, which can be saved as **P
     <font size=2><i>Sigma Counts</i></font>
   </p>
   <p align="center">
-    <img src="https://github.com/user-attachments/assets/798fad72-40cf-4afe-a0e4-0e35bc1e0d2a" width="700"/>
+    <img src="https://github.com/user-attachments/assets/bc2a19bc-a04b-4377-98c1-7a6514426742" width="700"/>
   </p>
 </div>
-
