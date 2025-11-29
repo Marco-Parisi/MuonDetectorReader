@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:MuonDetectorReader"     
         xmlns:ext="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d" UseLayoutRounding="True" WindowStartupLocation="CenterOwner"
-        Title="Muon Detector Reader" MinHeight="550" MinWidth="890" Height="620" Width="910">
+        Title="Muon Detector Reader" MinHeight="660" MinWidth="900" Height="660" Width="900">
 
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="{Binding ActualHeight, ElementName=WinBarGrid}" CornerRadius="0" GlassFrameThickness="0"/>
@@ -26,16 +26,20 @@
                     <ColumnDefinition Width="40"/>
                     <ColumnDefinition Width="40"/>
                     <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
                     <ColumnDefinition Width="4"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="{Binding Title, RelativeSource={RelativeSource FindAncestor,AncestorType=Window},FallbackValue=Muon Detector Reader}" 
-                            Margin="20 10 0 0" FontWeight="Bold" Grid.RowSpan="3" HorizontalAlignment="Left" FontSize="{StaticResource FixedFontSize}"/>
+                <TextBlock Name="WindowTitle" Margin="20 10 0 0" FontWeight="Bold" Grid.RowSpan="3" HorizontalAlignment="Left" FontSize="{StaticResource FixedFontSize}"/>
                 <Button Grid.Row="1" WindowChrome.IsHitTestVisibleInChrome="True" Grid.Column="1"
+                        Click="ShowHelpClick" Height="22" Width="30" Padding="0" Background="WhiteSmoke">
+                    <TextBlock Text="?" FontSize="15" FontWeight="Bold"/>
+                </Button>
+                <Button Grid.Row="1" WindowChrome.IsHitTestVisibleInChrome="True" Grid.Column="2"
                         Click="MinimizeClick" Height="22" Width="30" Padding="0" Background="WhiteSmoke">
                     <Line X1="0" X2="10" Y1="12" Y2="12" Stroke="{StaticResource ButtonForegroundBrush}"/>
                 </Button>
                 <Button x:Name="MaximizeButton" Grid.Row="1" WindowChrome.IsHitTestVisibleInChrome="True"
-                        Grid.Column="2" Click="MaximizeClick" Height="22" Width="30" Background="WhiteSmoke">
+                        Grid.Column="3" Click="MaximizeClick" Height="22" Width="30" Background="WhiteSmoke">
                     <Grid Opacity=".8">
                         <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
                             <Rectangle Height="11" Width="14" StrokeThickness="1.3"  Stroke="{StaticResource ButtonForegroundBrush}" RadiusX="1" RadiusY="1"/>
@@ -49,7 +53,7 @@
                     </Grid>
                 </Button>
                 <Button Grid.Row="1" WindowChrome.IsHitTestVisibleInChrome="True" Background="OrangeRed"
-                        Grid.Column="3" Click="CloseClick" Height="22" Width="30">
+                        Grid.Column="4" Click="CloseClick" Height="22" Width="30">
                     <Grid Opacity=".8">
                         <Line X1="0" X2="10" Y1="0" Y2="10" StrokeThickness="1.5" Stroke="{StaticResource ButtonForegroundBrush}"/>
                         <Line X1="0" X2="10" Y1="10" Y2="0" StrokeThickness="1.5" Stroke="{StaticResource ButtonForegroundBrush}"/>
@@ -70,7 +74,7 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 
                         <StackPanel VerticalAlignment="Center">
-                            <Button Margin="0, 10, 10, 10" Click="Button_Click" Width="80" Height="24" 
+                            <Button Margin="0, 10, 10, 10" Click="Open_Click" Width="80" Height="24" 
                                     BorderThickness="1" BorderBrush="Black" Background="WhiteSmoke"
                                     VerticalAlignment="Center">
                                 Apri File
@@ -180,7 +184,7 @@
                                             </StackPanel>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
                                                 <TextBlock Text="Maschera Dati "/>
-                                                <CheckBox Width="18" Name="ShowHideData" IsEnabled="True" Click="ShowHideData_Click"/>
+                                                <CheckBox Width="18" x:Name="ShowHideData" IsEnabled="True" Click="ShowHideData_Click"/>
                                             </StackPanel>
                                         </StackPanel>
                                         <StackPanel>
@@ -235,12 +239,127 @@
                     </StackPanel>
                     <Line X1="0" X2="{Binding ElementName=MainGrid,Path=ActualWidth}" Stroke="Black" StrokeThickness="0.5"/>
                 </StackPanel>
-                <TextBlock x:Name="MessageTextblock" TextWrapping="Wrap"
-                           FontSize="22" Grid.Row="1" VerticalAlignment="Center"
-                           HorizontalAlignment="Center" Width="800" TextAlignment="Center" LineHeight="36">
-                    Cliccare su Apri File per leggere il file di dati.<LineBreak/>
-                    (Se si vuole stimare Beta, utilizzare un file con almeno 2 mesi di dati)
-                </TextBlock>
+                <StackPanel x:Name="MessageStack" Grid.Row="1" Width="900" VerticalAlignment="Top">
+                    <TextBlock x:Name="MessageTextblock"  HorizontalAlignment="Center" VerticalAlignment="Center" 
+                               TextAlignment="Center" LineHeight="20" Margin="0,10,0,20">
+                        <Run Text="Cliccare su" 
+                             FontSize="24"
+                             FontWeight="Normal"/>
+                        <Run Text="Apri File" 
+                             FontSize="24"
+                             FontWeight="Bold"/>
+                        <Run Text="per leggere i dati." 
+                             FontSize="24"
+                             FontWeight="Normal"/>
+                        <LineBreak/>
+    
+                        <Run Text="(Per stimare Beta utilizzare un file con almeno 2 mesi di dati)" 
+                             FontSize="20" 
+                             Foreground="DimGray" 
+                             FontStyle="Italic"/>
+                    </TextBlock>
+                    
+                    <TextBlock TextWrapping="Wrap" FontSize="18"  VerticalAlignment="Center"
+                               HorizontalAlignment="Center" TextAlignment="Left">
+                        <Run Text="FORMATO DEI DATI" 
+                             FontWeight="Bold" 
+                             TextDecorations="Underline"/>
+                        <Run Text=" (Separatori accettati: virgola ',' oppure asterisco '*')" 
+                             FontSize="18" 
+                             Foreground="DimGray"
+                             FontStyle="Italic"/>
+                        <LineBreak/>
+                        <Run Text="File di testo (.txt o .csv) con 4 colonne →"/>
+    
+                        <Run Text="Data e Ora" FontStyle="Italic" FontWeight="Medium"/>
+                        <Run Text=" | " Foreground="LightGray"/>
+                        <Run Text="Temp" FontStyle="Italic" FontWeight="Medium"/>
+                        <Run Text=" | " Foreground="LightGray"/>
+                        <Run Text="Pressione" FontStyle="Italic" FontWeight="Medium"/>
+                        <Run Text=" | " Foreground="LightGray"/>
+                        <Run Text="Conteggi" FontStyle="Italic" FontWeight="Medium"/>
+                        <LineBreak/>
+                        <LineBreak/>
+                        
+                        <Run Text="GUIDA" 
+                             FontWeight="Bold" 
+                             TextDecorations="Underline"/>
+                        <LineBreak/>
+
+                        <Run Text="Rimuovi Outliers"
+                             FontWeight="Bold" 
+                             Foreground="#005A9E"/> 
+                        <Run Text="→ Sostituisce i dati fuori dall'intervallo"/>
+                        <Run Text="Media ± Nσ" FontStyle="Italic"/> <Run Text="con la media dei dati adiacenti."/>
+                        <LineBreak/>
+
+                        <Run Text="Corr. Temperatura" 
+                             FontWeight="Bold" 
+                             Foreground="#800080"/>
+                        <Run Text="→ Corregge i dati dalla temperatura per rivelatore"/>
+                        <Run Text="EKAR." FontWeight="bold"/>
+                        <LineBreak/>
+
+                        <Run Text="Media Mobile" 
+                             FontWeight="Bold" 
+                             Foreground="#00a010"/>
+                        <Run Text="→ Plotta una linea che interpola un numero pari a"/>
+                        <Run Text="N" FontStyle="Italic"/> <Run Text="pt per ridurre le variazioni rapide."/>
+                        <LineBreak/>
+                        
+                        <Run Text="Altro Grafico" 
+                             FontWeight="Bold" 
+                             Foreground="#d08000"/>
+                        <Run Text="→ Plotta due grafici usando l'asse delle ordinate destro e sinistro"/>
+                        <LineBreak/>
+                        
+                        <Run Text="Esporta Grafico" FontWeight="Bold"/>
+                        <Run Text="→ Slava il grafico in png sul desktop."/>     
+                        <LineBreak/>
+                        <Run Text="Esporta File" FontWeight="Bold"/>
+                        <Run Text="→ Salva i dati corretti in txt sul desktop"/>     
+                        <LineBreak/>
+                        <Run Text="Fluxgate" 
+                             FontWeight="Bold">         
+                            <Run.Foreground>
+                                <LinearGradientBrush>
+                                    <GradientStop Offset="0.0" Color="DodgerBlue"/>
+                                    <GradientStop Offset="0.95" Color="Blue"/>
+                                </LinearGradientBrush>
+                            </Run.Foreground>
+                        </Run>
+                        <Run Text="→ Legge i dati del rilevatore Fluxgate con le colonne →"/>
+                        <Run Text="Data e Ora" FontStyle="Italic" FontWeight="Medium"/>
+                        <Run Text=" | " Foreground="LightGray"/>
+                        <Run Text="Upper" FontStyle="Italic" FontWeight="Medium"/>
+                        <Run Text=" | " Foreground="LightGray"/>
+                        <Run Text="Lower" FontStyle="Italic" FontWeight="Medium"/>
+                        <Run Text=" |  " Foreground="LightGray"/>
+                        <Run Text="Diff" FontStyle="Italic" FontWeight="Medium"/>
+                        <LineBreak/>
+                        <LineBreak/>
+                        
+                        <Run Text="INFO" 
+                             FontWeight="Bold" 
+                             TextDecorations="Underline"/>
+                        <LineBreak/>
+                        <Run Text="•" FontWeight="Bold"/>
+                        <Run Text="I conteggi sono espressi in % rispetto alla media."/>
+                        <LineBreak/>
+                        
+                        <Run Text="•" FontWeight="Bold"/>
+                        <Run Text="La retta nera tratteggiata rappresenta il valore medio dei dati selezionati."/>
+                        <LineBreak/>
+                        
+                        <Run Text="•" FontWeight="Bold"/>
+                        <Run Text="Si possono ingrandire gli assi tramite la rotellina del mouse con il puntatore su uno di essi."/>
+                        <LineBreak/>
+                        
+                        <Run Text="•" FontWeight="Bold"/>
+                        <Run Text="Quando l'intervallo di date è ≤ di 3 giorni, comparirà l'intervallo di confidenza dei dati."/>     
+                      
+                    </TextBlock>
+                </StackPanel>
                 <!--Cliccare su Media File per effettuare la media dei dati di 2 o più rilevatori.-->
 
                 <Grid Grid.RowSpan="2" Width="670" Name="DoubleGraphPanel"

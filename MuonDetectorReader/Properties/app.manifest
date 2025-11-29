@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
   <assemblyIdentity version="1.0.0.0" name="MyApplication.app" />
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
     <security>
@@ -19,17 +19,11 @@
         <requestedExecutionLevel level="asInvoker" uiAccess="false" />
       </requestedPrivileges>
       <applicationRequestMinimum>
+        <PermissionSet class="System.Security.PermissionSet" version="1" Unrestricted="true" ID="Custom" SameSite="site" />
         <defaultAssemblyRequest permissionSetReference="Custom" />
-        <PermissionSet class="System.Security.PermissionSet" version="1" ID="Custom" SameSite="site" Unrestricted="true" />
       </applicationRequestMinimum>
     </security>
   </trustInfo>
-  <asmv3:application>
-    <asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
-      <dpiAware>false</dpiAware>
-    </asmv3:windowsSettings>
-    <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
-  </asmv3:application>
   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
     <application>
       <!-- Elenco delle versioni di Windows in cui è stata testata questa applicazione e
@@ -49,12 +43,15 @@
   </compatibility>
   <!-- Indica che l'applicazione è sensibile ai valori DPI e non verrà scalata automaticamente da Windows in caso di
        valori DPI maggiori. Le applicazioni Windows Presentation Foundation (WPF) sono automaticamente sensibili ai valori DPI, pertanto non è necessario 
-       acconsentire esplicitamente. Con le applicazioni Windows Form destinate a .NET Framework 4.6 per cui è stato acconsentito esplicitamente a questa impostazione, 
-       è anche necessario impostare 'EnableWindowsFormsHighDpiAutoResizing' su 'true' nel relativo file app.config. -->
+       acconsentire esplicitamente. Con le applicazioni Windows Forms destinate a .NET Framework 4.6 per cui è stato acconsentito esplicitamente a questa impostazione, 
+       è anche necessario impostare 'EnableWindowsFormsHighDpiAutoResizing' su 'true' nel relativo file app.config. 
+       
+       Imposta l'applicazione in modo riconosca i percorsi lunghi. Vedere https://docs.microsoft.com/windows/win32/fileio/maximum-file-path-limitation -->
   <!--
   <application xmlns="urn:schemas-microsoft-com:asm.v3">
     <windowsSettings>
       <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
+      <longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">true</longPathAware>
     </windowsSettings>
   </application>
   -->

@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30907.101
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MuonDetectorReader", "MuonDetectorReader.csproj", "{DFF5058B-F494-483C-8AEE-1A02BA1AEEEA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MuonDetectorReader", "MuonDetectorReader\MuonDetectorReader.csproj", "{97E0928E-7AB3-47B4-9BC2-49EE88C3D40C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +13,14 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DFF5058B-F494-483C-8AEE-1A02BA1AEEEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DFF5058B-F494-483C-8AEE-1A02BA1AEEEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DFF5058B-F494-483C-8AEE-1A02BA1AEEEA}.Debug|x86.ActiveCfg = Debug|x86
-		{DFF5058B-F494-483C-8AEE-1A02BA1AEEEA}.Debug|x86.Build.0 = Debug|x86
-		{DFF5058B-F494-483C-8AEE-1A02BA1AEEEA}.Release|Any CPU.ActiveCfg = Release|x86
-		{DFF5058B-F494-483C-8AEE-1A02BA1AEEEA}.Release|Any CPU.Build.0 = Release|x86
-		{DFF5058B-F494-483C-8AEE-1A02BA1AEEEA}.Release|x86.ActiveCfg = Release|x86
-		{DFF5058B-F494-483C-8AEE-1A02BA1AEEEA}.Release|x86.Build.0 = Release|x86
+		{97E0928E-7AB3-47B4-9BC2-49EE88C3D40C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97E0928E-7AB3-47B4-9BC2-49EE88C3D40C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97E0928E-7AB3-47B4-9BC2-49EE88C3D40C}.Debug|x86.ActiveCfg = Release|x86
+		{97E0928E-7AB3-47B4-9BC2-49EE88C3D40C}.Debug|x86.Build.0 = Release|x86
+		{97E0928E-7AB3-47B4-9BC2-49EE88C3D40C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97E0928E-7AB3-47B4-9BC2-49EE88C3D40C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97E0928E-7AB3-47B4-9BC2-49EE88C3D40C}.Release|x86.ActiveCfg = Release|x86
+		{97E0928E-7AB3-47B4-9BC2-49EE88C3D40C}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

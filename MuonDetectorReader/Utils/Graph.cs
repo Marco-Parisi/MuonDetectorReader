@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using PlotView = OxyPlot.Wpf.PlotView;
 
@@ -26,7 +27,9 @@ namespace MuonDetectorReader
 
         private static double yIntercept=0;
 
-        public static Grid GraphData(List<DateTime> Dates, List<double> data1, Color color, string ParName, bool Smooth = false, uint Window = 3, int Div = 40, bool HorLine = false, bool dot = false)
+        private static PolygonAnnotation confidenceArea = null;
+
+        public static Grid GraphData(List<DateTime> Dates, List<double> data1, Color color, string ParName, bool Smooth = false, uint Window = 3, List<double> err_data1 = null, int Div = 40, bool HorLine = false, bool dot = false)
         {
             SolidColorBrush brC = new SolidColorBrush(color);
 
@@ -38,8 +41,9 @@ namespace MuonDetectorReader
             {
                 Visibility = Visibility.Collapsed,
                 Content = "Reset Grafico",
-                Height = 25,
-                Width = 80,
+                Height = 30,
+                Width = 100,
+                FontWeight = System.Windows.FontWeights.Bold,
                 Background = brC,
                 Foreground = new SolidColorBrush(Colors.White)
             };
@@ -47,15 +51,18 @@ namespace MuonDetectorReader
             Button stretchButton = new Button()
             {
                 Content = "Stretch Grafico",
-                Height = 25,
-                Width = 90
+                Height = 30,
+                Width = 100,
+                FontWeight = System.Windows.FontWeights.Bold,
+                Background = brC,
+                Foreground = new SolidColorBrush(Colors.White)
             };
 
             StackPanel buttonsPanel = new StackPanel()
             {
-                Margin = new Thickness(30, 30, 30, 5),
+                Margin = new Thickness(90, 10, 10, 5),
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
-                VerticalAlignment = System.Windows.VerticalAlignment.Bottom,
+                VerticalAlignment = System.Windows.VerticalAlignment.Top,
                 Orientation = Orientation.Horizontal
 
             };
@@ -70,19 +77,20 @@ namespace MuonDetectorReader
                 Foreground = new SolidColorBrush(Colors.Black),               
             };
 
-            FunctionSeries fs = new FunctionSeries()
+            LineSeries fs = new LineSeries()
             {
                 CanTrackerInterpolatePoints = false,
                 Color = oxC,
                 LineStyle = dot ? LineStyle.None : LineStyle.Solid,
                 MarkerType = dot ? MarkerType.Circle : MarkerType.None,
                 MarkerSize = 3,
-                MarkerFill = dot ? oxC : OxyColor.FromArgb(180, 0, 0, 0),
+                MarkerFill = dot ? oxC : OxyColor.FromArgb(255, 0, 0, 0),
                 MarkerStrokeThickness = 0,
-                //MarkerStroke = OxyColor.FromArgb(200, 50, 50, 50),
             };
             fs.Decimator = Decimator.Decimate;
 
+            var upperLimitPoints = new List<DataPoint>();
+            var lowerLimitPoints = new List<DataPoint>();
 
             int i = 0;
 
@@ -92,6 +100,12 @@ namespace MuonDetectorReader
                 {
 
                     fs.Points.Add(new DataPoint(DateTimeAxis.ToDouble(date), data1[i]));
+
+                    if (err_data1 != null)
+                    {
+                        upperLimitPoints.Add(new DataPoint(DateTimeAxis.ToDouble(date), data1[i] + err_data1[i]));
+                        lowerLimitPoints.Add(new DataPoint(DateTimeAxis.ToDouble(date), data1[i] - err_data1[i]));
+                    }
                     i++;
                 }
                 catch
@@ -99,6 +113,25 @@ namespace MuonDetectorReader
                      throw new FormatException();
                 }
 
+            }
+
+            if (err_data1 != null)
+            {
+                List<DataPoint> polygonPoints = new List<DataPoint>();
+
+                polygonPoints.AddRange(lowerLimitPoints);
+                polygonPoints.AddRange(upperLimitPoints.AsEnumerable().Reverse());
+
+                confidenceArea = new PolygonAnnotation
+                {
+                    Fill = OxyColor.FromArgb(80, oxC.R, oxC.G, oxC.B),
+                    StrokeThickness = 0,
+                    Layer = AnnotationLayer.BelowSeries
+                };
+
+                confidenceArea.Points.AddRange(polygonPoints);
+
+                //n.Annotations.Add(confidenceArea);
             }
 
             double fsPointsMean = fs.Points.Average(d => d.Y);
@@ -126,20 +159,20 @@ namespace MuonDetectorReader
                 LegendPosition = LegendPosition.TopRight,
                 Title = MainWindow.GraphTitle,
                 TitleFontSize = 14,
-                Subtitle = "File: " + MainWindow.FileName,
+                Subtitle = "File: " + MainWindow.FileName + " | Dati: " + Dates.Count.ToString(),
             };
 
 
             LinearAxis yAxis = new LinearAxis()
             {
-                Title = "",//ParName,        
+                Title = ParName,        
                 AxisTitleDistance = 20,
                 IntervalLength = 30,
                 MajorGridlineStyle = LineStyle.Dash,
                 MinorGridlineStyle = LineStyle.Dot,
                 Maximum = fsPointsMax + (fsPointsMax / Div),
                 Minimum = fsPointsMin - (fsPointsMin / Div),
-           
+
             };
 
             if (ParName.Contains("Conteggi"))
@@ -157,7 +190,6 @@ namespace MuonDetectorReader
             {
                 Position = AxisPosition.Bottom,
                 StringFormat = "yyyy/MM/dd HH:mm",
-                Title = "Data",
                 AxisTitleDistance = 10,
                 IntervalLength = 30,
                 IntervalType = DateTimeIntervalType.Days,
@@ -173,6 +205,30 @@ namespace MuonDetectorReader
             {
                 resetButton.Dispatcher.Invoke(() => { resetButton.Visibility = Visibility.Visible; });
                 stretchButton.Dispatcher.Invoke(() => { stretchButton.Visibility = Visibility.Collapsed; });
+
+                DateTimeAxis ax = (s as DateTimeAxis);
+
+                PolygonAnnotation confarea = null;
+
+                foreach (var ann in n.Annotations)
+                {
+                    if (ann as PolygonAnnotation != null)
+                    {
+                        confarea = ann as PolygonAnnotation;
+                        break;
+                    }
+                }
+
+                if (ax.ActualMaximum - ax.ActualMinimum <= 3)
+                {
+                    if (err_data1 != null && confarea == null && !MainWindow.HideData)
+                        n.Annotations.Add(confidenceArea.Clone());
+                }
+                else
+                {
+                    if (err_data1 != null && confarea != null)
+                        n.Annotations.Remove(confarea);
+                }
             };
 
 
@@ -230,12 +286,12 @@ namespace MuonDetectorReader
             n.Series.Add(fs);
 
             LinearAxis yAxis2 = new LinearAxis();
-            FunctionSeries fs2 = new FunctionSeries();
+            LineSeries fs2 = new LineSeries();
 
+            n.Series.Add(AvgLine(fs.Points));
             if (Smooth)
             {
-                n.Series.Add(AvgLine(fs.Points));
-                n.Annotations.Add(Smoothed(fs.Points, Window));
+                n.Annotations.Add(Smoothed(fs.Points, Window, err_data1));
             }
 
             n.Axes.Add(xAxis);
@@ -244,7 +300,7 @@ namespace MuonDetectorReader
             if (HorLine)
             {
 
-                fs2 = new FunctionSeries()
+                fs2 = new LineSeries()
                 {
                     CanTrackerInterpolatePoints = false,
                     Color = OxyColors.DarkGreen,
@@ -289,6 +345,10 @@ namespace MuonDetectorReader
             chart1.ActualController.UnbindMouseDown(OxyMouseButton.Left);
             chart1.ActualController.BindMouseDown(OxyMouseButton.Left, PlotCommands.PanAt);
 
+            chart1.Model.Axes[0].Reset();
+            resetButton.Visibility = Visibility.Collapsed;
+            stretchButton.Visibility = Visibility.Visible;
+
             grid.Children.Add(chart1);
             grid.Children.Add(buttonsPanel);
            
@@ -308,9 +368,11 @@ namespace MuonDetectorReader
                 Visibility = Visibility.Collapsed,
                 Content = "Reset Zoom",
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
-                VerticalAlignment = System.Windows.VerticalAlignment.Bottom,
-                Height=30, Width=80,
-                Margin = new Thickness(30, 30, 30, 5),
+                VerticalAlignment = System.Windows.VerticalAlignment.Top,
+                Height = 30,
+                Width = 100,
+                FontWeight = System.Windows.FontWeights.Bold,
+                Margin = new Thickness(90, 10, 10, 5),
                 Background = oxC,
                 Foreground = new SolidColorBrush(Colors.White)
             };
@@ -328,7 +390,7 @@ namespace MuonDetectorReader
                 PlotMargins = new OxyThickness(double.NaN, 0, double.NaN, double.NaN),
                 Title = MainWindow.GraphTitle,
                 TitleFontSize = 14,
-                Subtitle = "File: "+MainWindow.FileName,
+                Subtitle = "File: "+MainWindow.FileName + " | Dati: "  + Dates.Count.ToString(),
             };
 
             LinearAxis yAxis = new LinearAxis()
@@ -356,7 +418,6 @@ namespace MuonDetectorReader
             {
                 Position = AxisPosition.Bottom,
                 StringFormat = "yyyy/MM/dd HH:mm",
-                Title = "Data",
                 AxisTitleDistance = 10,
                 IntervalLength = 30,
                 MinimumMajorStep = 0.001,
@@ -367,7 +428,7 @@ namespace MuonDetectorReader
                 Angle = -35
             };
 
-            FunctionSeries fs = new FunctionSeries()
+            LineSeries fs = new LineSeries()
             {
                 CanTrackerInterpolatePoints = false,
                 Color = OxyColor.FromArgb(oxC.Color.A, oxC.Color.R, oxC.Color.G, oxC.Color.B),
@@ -378,7 +439,7 @@ namespace MuonDetectorReader
             };
             fs.Decimator = Decimator.Decimate;
 
-            FunctionSeries fs2 = new FunctionSeries()
+            LineSeries fs2 = new LineSeries()
             {
                 CanTrackerInterpolatePoints = false,
                 Color = OxyColor.FromArgb(oxC2.Color.A, oxC2.Color.R, oxC2.Color.G, oxC2.Color.B),
@@ -502,10 +563,11 @@ namespace MuonDetectorReader
                 Visibility = Visibility.Collapsed,
                 Content = "Reset Zoom",
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
-                VerticalAlignment = System.Windows.VerticalAlignment.Bottom,
+                VerticalAlignment = System.Windows.VerticalAlignment.Top,
                 Height = 30,
-                Width = 80,
-                Margin = new Thickness(30, 30, 30, 15),
+                Width = 100,
+                FontWeight = System.Windows.FontWeights.Bold,
+                Margin = new Thickness(90, 10, 10, 5),
                 Background = oxC,
                 Foreground = new SolidColorBrush(Colors.White)
             };
@@ -517,7 +579,7 @@ namespace MuonDetectorReader
                 DefaultTrackerTemplate = null,
             };
 
-            FunctionSeries fs = new FunctionSeries()
+            LineSeries fs = new LineSeries()
             {
                 Color = OxyColor.FromArgb(oxC.Color.A, oxC.Color.R, oxC.Color.G, oxC.Color.B),
                 LineStyle = LineStyle.None,
@@ -558,7 +620,7 @@ namespace MuonDetectorReader
                 LegendMaxWidth = 280,
                 Title = MainWindow.GraphTitle,
                 TitleFontSize = 14,
-                Subtitle = "File: "+MainWindow.FileName,
+                Subtitle = "File: "+MainWindow.FileName + " | Dati: " + logN.Count.ToString(),
             };
 
 
@@ -585,7 +647,7 @@ namespace MuonDetectorReader
                 Maximum = fs.Points.Max(p => p.X) + Math.Abs(fs.Points.Max(p => p.X) / 10)
             };
 
-            FunctionSeries TrendFS = new FunctionSeries()
+            LineSeries TrendFS = new LineSeries()
             {
                 Color = OxyColors.Red,
                 LineStyle = LineStyle.Dash,
@@ -666,8 +728,9 @@ namespace MuonDetectorReader
             {
                 Visibility = Visibility.Collapsed,
                 Content = "Reset Grafico",
-                Height = 25,
-                Width = 80,
+                Height = 30,
+                Width = 100,
+                FontWeight = System.Windows.FontWeights.Bold,
                 Background = new SolidColorBrush(Colors.OrangeRed),
                 Foreground = new SolidColorBrush(Colors.White)
             };
@@ -675,15 +738,16 @@ namespace MuonDetectorReader
             Button stretchButton = new Button()
             {
                 Content = "Stretch Grafico",
-                Height = 25,
-                Width = 90
+                Height = 30,
+                Width = 100,
+                FontWeight = System.Windows.FontWeights.Bold,
             };
 
             StackPanel buttonsPanel = new StackPanel()
             {
-                Margin = new Thickness(30, 30, 30, 5),
+                Margin = new Thickness(90, 10, 10, 5),
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
-                VerticalAlignment = System.Windows.VerticalAlignment.Bottom,
+                VerticalAlignment = System.Windows.VerticalAlignment.Top,
                 Orientation = Orientation.Horizontal
 
             };
@@ -699,7 +763,7 @@ namespace MuonDetectorReader
             };
 
 
-            FunctionSeries fs = new FunctionSeries()
+            LineSeries fs = new LineSeries()
             {
                 CanTrackerInterpolatePoints = false,
                 Color = OxyColor.FromArgb(150, 50, 50, 50),
@@ -753,13 +817,13 @@ namespace MuonDetectorReader
                 LegendPosition = LegendPosition.TopRight,
                 Title = MainWindow.GraphTitle,
                 TitleFontSize = 14,
-                Subtitle = "File: "+MainWindow.FileName,
+                Subtitle = "File: " + MainWindow.FileName + " | Dati: " + Dates.Count.ToString(),
                 
             };
            
             LinearAxis yAxis = new LinearAxis()
             {
-                Title = "",
+                Title = "Conteggi Corretti",
                 AxisTitleDistance = 20,
                 IntervalLength = 30,
                 MajorGridlineStyle = LineStyle.Dot,
@@ -776,7 +840,6 @@ namespace MuonDetectorReader
             {
                 Position = AxisPosition.Bottom,
                 StringFormat = "yyyy/MM/dd HH:mm",
-                Title = "Data",
                 AxisTitleDistance = 10,
                 IntervalLength = 30,
                 IntervalType = DateTimeIntervalType.Days,
@@ -891,7 +954,7 @@ namespace MuonDetectorReader
             n.Axes.Add(xAxis);
             n.Axes.Add(yAxis);
 
-            FunctionSeries fsMean = new FunctionSeries()
+            LineSeries fsMean = new LineSeries()
             {
                 CanTrackerInterpolatePoints = false,
                 Color = OxyColor.FromArgb(150, 30, 90, 255),
@@ -906,7 +969,6 @@ namespace MuonDetectorReader
             n.Series.Add(fsMean);
 
 
-            OxyPlot.Annotations.
             RectangleAnnotation SigmaAnn = new RectangleAnnotation()
             {
                 MinimumY = -2 * Sigma + fsPointsMean,
@@ -1017,18 +1079,18 @@ namespace MuonDetectorReader
             return grid;
         }
 
-        public static FunctionSeries UpdateTemperatureCorr(List<DateTime> Dates, List<double> data, PlotView pv)
+        public static LineSeries UpdateTemperatureCorr(List<DateTime> Dates, List<double> data, PlotView pv)
         {
-            FunctionSeries fs = new FunctionSeries()
+            LineSeries fs = new LineSeries()
             {
                 CanTrackerInterpolatePoints = false,
-                Color = (pv.Model.Series.First() as FunctionSeries).Color,
+                Color = (pv.Model.Series.First() as LineSeries).Color,
                 LineStyle = LineStyle.Solid,
                 MarkerType = MarkerType.None,
                 MarkerSize = 1.5,
                 MarkerFill = OxyColors.Black,
                 MarkerStrokeThickness = 0,
-                TrackerFormatString = (pv.Model.Series.First() as FunctionSeries).TrackerFormatString
+                TrackerFormatString = (pv.Model.Series.First() as LineSeries).TrackerFormatString
             };
             fs.Decimator = Decimator.Decimate;
 
@@ -1060,12 +1122,54 @@ namespace MuonDetectorReader
             return fs;
         }
 
-        private static FunctionSeries LinearRegression(List<double> xListRef, List<double> yListRef, out double m, out double sigma_m, out double q)
+        public static PolygonAnnotation UpdateTemperatureCorrAnn(List<DateTime> Dates, List<double> data, List<double> err_data, PlotView pv)
+        {
+            var oxC = (pv.Model.Series.First() as LineSeries).Color;
+
+            var upperLimitPoints = new List<DataPoint>();
+            var lowerLimitPoints = new List<DataPoint>();
+            int i = 0;
+
+            foreach (DateTime date in Dates)
+            {
+                try
+                {
+                    upperLimitPoints.Add(new DataPoint(DateTimeAxis.ToDouble(date), data[i] + err_data[i]));
+                    lowerLimitPoints.Add(new DataPoint(DateTimeAxis.ToDouble(date), data[i] - err_data[i]));
+                    
+                    i++;
+                }
+                catch
+                {
+                    throw new FormatException();
+                }
+
+            }
+
+            var polygonPoints = new List<DataPoint>();
+
+            polygonPoints.AddRange(lowerLimitPoints);
+            polygonPoints.AddRange(upperLimitPoints.AsEnumerable().Reverse());
+
+            confidenceArea = new PolygonAnnotation
+            {
+                Fill = OxyColor.FromArgb(70, oxC.R, oxC.G, oxC.B),
+                StrokeThickness = 0,
+                Layer = AnnotationLayer.BelowSeries
+            };
+
+            confidenceArea.Points.AddRange(polygonPoints);
+            
+            return confidenceArea;
+        }
+
+
+        private static LineSeries LinearRegression(List<double> xListRef, List<double> yListRef, out double m, out double sigma_m, out double q)
         {
             List<double> xList = xListRef.ToList();
             List<double> yList = yListRef.ToList();
 
-            FunctionSeries fsFit = new FunctionSeries()
+            LineSeries fsFit = new LineSeries()
             {
                 Color = OxyColors.Black,
                 LineStyle = LineStyle.Dash,
@@ -1113,9 +1217,9 @@ namespace MuonDetectorReader
             return fsFit;
         }
 
-        public static PolylineAnnotation Smoothed(List<DataPoint> DP, uint Window = 4)
+        public static PolylineAnnotation Smoothed(List<DataPoint> DP, uint Window = 4, List<double>DeltaDP = null)
         {
-            PolylineAnnotation fsFFT = new PolylineAnnotation()
+            PolylineAnnotation weightedAverageSeries = new PolylineAnnotation()
             {
                 //CanTrackerInterpolatePoints = false,
                 LineJoin = LineJoin.Round,
@@ -1127,65 +1231,46 @@ namespace MuonDetectorReader
                 //TrackerFormatString = " Andamento Smussato ",
             };
 
-            double xLocalMean = 0, yLocalMean = 0;
-            int i = 0;
-            DataPoint dp;
-
-            if (Window >= DP.Count / 2)
-                return fsFFT;
-
-            for (int k = 0; k < DP.Count;)
+            for (int k = 0; k <= DP.Count - Window; k++)
             {
-                dp = DP[k + i];
+                double sumOfWeightedX = 0;
+                double sumOfWeightedY = 0;
+                double sumOfWeights = 0;
 
-                if (i >= Window)
+                for (int i = 0; i < Window; i++)
                 {
-                    fsFFT.Points.Add(new DataPoint(xLocalMean / Window, yLocalMean / Window));
-                    yLocalMean = xLocalMean = i = 0;
+                    DataPoint dp = DP[k + i];
+                    double deltaY = DeltaDP != null ? DeltaDP[k + i] : 1.0;
 
-                    if (k < DP.Count - Window - 1)
-                        k++;
-                    else
-                        break;
+                    double weight = 1.0 / (deltaY * deltaY);               
+
+                    sumOfWeightedX += weight * dp.X;
+                    sumOfWeightedY += weight * dp.Y;
+                    sumOfWeights += weight;
                 }
 
-                xLocalMean += dp.X;
-                yLocalMean += dp.Y;
-                i++;
+                double xWeightedMean = sumOfWeightedX / sumOfWeights;
+                double yWeightedMean = sumOfWeightedY / sumOfWeights;
 
+                weightedAverageSeries.Points.Add(new DataPoint(xWeightedMean, yWeightedMean));
             }
 
-
-            //foreach (DataPoint dp in DP)
-            //{
-            //    if (i >= Window)
-            //    {
-            //        fsFFT.Points.Add(new DataPoint(xLocalMean / i, yLocalMean / i));
-            //        yLocalMean = xLocalMean = i = 0;
-            //    }
-
-            //    xLocalMean += dp.X;
-            //    yLocalMean += dp.Y;
-            //    i++;
-
-            //}
-
-            return fsFFT;
+            return weightedAverageSeries;
         }
 
-        public static FunctionSeries AvgLine(List<DataPoint> DP)
+        public static LineSeries AvgLine(List<DataPoint> DP)
         {
             double yMean = DP.Average( p => p.Y);
             DataPoint firtsDP = new DataPoint(DP.First().X, yMean);
             DataPoint LastDP = new DataPoint(DP.Last().X, yMean);
 
-            FunctionSeries fs = new FunctionSeries()
+            LineSeries fs = new LineSeries()
             {
-                CanTrackerInterpolatePoints = false,
-                Color = OxyColors.Orange,
-                LineStyle = LineStyle.DashDot,
-                StrokeThickness = 3,
-                TrackerFormatString = " Retta Media ",
+                CanTrackerInterpolatePoints = true,
+                Color = OxyColor.FromArgb(200, 0, 0, 0),
+                LineStyle = LineStyle.Dash,
+                StrokeThickness = 2,
+                TrackerFormatString = " Retta Media: " + yMean.ToString(),
             };
 
             fs.Points.Add(firtsDP);

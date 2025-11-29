@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32;
 using OxyPlot;
-using OxyPlot.Series;
+using LineSeries = OxyPlot.Series.LineSeries;
 using OxyPlot.Wpf;
 using System;
 using System.Collections.Generic;
@@ -16,6 +16,8 @@ using DateTimePicker = Xceed.Wpf.Toolkit.DateTimePicker;
 using static MuonDetectorReader.Graph;
 using System.Threading.Tasks;
 using MuonDetectorReader.Utils;
+using System.Windows.Documents;
+using FontWeights = System.Windows.FontWeights;
 
 namespace MuonDetectorReader
 { 
@@ -30,6 +32,12 @@ namespace MuonDetectorReader
         List<DateTime> Dates = new List<DateTime>();
         List<double> CorrCounts = new List<double>();
         List<double> FullCorrCounts = new List<double>();
+        List<double> DeltaCorrCounts = new List<double>();
+        List<double> DeltaFullCorrCounts = new List<double>();
+
+        double Temp_avg;
+        const double kT = -0.001599129876488731; // Valido solo per EKAR, stimato dai dati 2024_09 - 2025_11
+        const double SigmakT = 2.7746839281697869E-09;
 
         public static string GraphTitle = "Grafico";
         public static string ActiveGraph = "";
@@ -37,13 +45,16 @@ namespace MuonDetectorReader
         string SettingFilePath;
 
         public static string FileName;
+        public static bool HideData;
 
         public MainWindow()
         {
             InitializeComponent();
 
             SettingFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CRD1 Reader\\Settings.xml");
-
+            string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            version = version.Replace(".", "").Insert(1, ".");
+            WindowTitle.Text = "Muon Detector Reader v" + version;
             OpenSettingsFile();
         }
 
@@ -74,12 +85,12 @@ namespace MuonDetectorReader
             e.Handled = _regex.IsMatch(e.Text);
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Open_Click(object sender, RoutedEventArgs e)
         {
             
             string path;
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "file txt |*.txt";
+            openFileDialog.Filter = "file txt o csv |*.txt;*.csv";
 
             if (openFileDialog.ShowDialog().Value)
             {
@@ -90,17 +101,11 @@ namespace MuonDetectorReader
                     if (MainGrid != null)
                     {
                         if (MainGrid.Children.Count >= 4)
-                        {
-
                             MainGrid.Children.RemoveAt(3);
-                            MessageTextblock.Text = "";
-                        }
                     }
 
                     ParseTXT(path);
                     FileName = path.Remove(0, path.LastIndexOf("\\") + 1);
-
-                    MessageTextblock.Text = "File aperto con successo. Calcola Beta per mostrare i grafici.";
 
                     Dates.Reverse();
                     Temp.Reverse();
@@ -120,7 +125,7 @@ namespace MuonDetectorReader
 
                         GenerateCorrCounts();
                         GraficiPanel.IsEnabled = true;
-                        ShowHideData.IsChecked = false;
+                        ShowHideData.IsChecked = HideData = false;
 
                         DateTo.Value = DateFrom.Value = null;
 
@@ -140,7 +145,7 @@ namespace MuonDetectorReader
                     ShowHideData.IsEnabled = true;
 
                 }
-                catch (Exception ex)
+                catch
                 {
 
                     BetaPanel.IsEnabled = false;
@@ -148,11 +153,6 @@ namespace MuonDetectorReader
                     ExportPanel.IsEnabled = false;
                     ShowHideData.IsEnabled = false;
 
-                    MessageTextblock.Text = "Cliccare su Apri File per leggere il file di dati.\n" +
-                                            // "Cliccare su Media File per effettuare la media dei dati di 2 o più rilevatori. \n" +
-                                            "(Se si vuole stimare Beta, utilizzare un file con almeno 2 mesi di dati)";
-
-                    //MessageTextblock.Text = "Errore: Formato dei dati incompatibile.";
                     MessageBox.Show("Formato dei dati incompatibile", "Errore");
                 }
             }
@@ -284,6 +284,8 @@ namespace MuonDetectorReader
             else
                 OutlierSlider.IsEnabled = false;
 
+            DG_CG.IsChecked = DG_CCP.IsChecked = DG_CCPT.IsChecked = false;
+
             switch (tag)
             {
                 case "Beta":
@@ -316,36 +318,29 @@ namespace MuonDetectorReader
                     MainGrid.Children.Add(GraphData(Dates, RawCounts, Color.FromArgb(180, 0, 120, 0), "Conteggi", SmoothValue.Text == "OFF"? false : true, (uint)AvgSlider.Value));;
                     OutlierBox.IsEnabled = DatePickerPanel.IsEnabled = AvgSlider.IsEnabled = true;
                     if((uint)AvgSlider.Value != AvgSlider.Minimum)
-                    {
                         ShowHideData.IsEnabled = true;
-                        if (ShowHideData.IsChecked == true)
-                            ShowHideData_Click(1, null);
-                    }
+                    
                     break;
                 case "CC":
                     if (TempCorrBox.IsChecked == false)
                     {
                         GraphTitle = "Conteggi Corretti in Pressione";
-                        MainGrid.Children.Add(GraphData(Dates, CorrCounts, Color.FromArgb(150, 50, 110, 200), "Conteggi", SmoothValue.Text == "OFF" ? false : true, (uint)AvgSlider.Value, HorLine:true));
+                        MainGrid.Children.Add(GraphData(Dates, CorrCounts, Color.FromArgb(200, 50, 110, 200), "Conteggi Corretti", SmoothValue.Text == "OFF" ? false : true, (uint)AvgSlider.Value, err_data1: DeltaCorrCounts,  HorLine: false));
                     }
                     else
                     {
-                        GraphTitle = "Conteggi Corretti in Pressione e Temp.";
-                        MainGrid.Children.Add(GraphData(Dates, FullCorrCounts, Color.FromArgb(150, 50, 110, 200), "Conteggi", SmoothValue.Text == "OFF" ? false : true, (uint)AvgSlider.Value, HorLine: true));
+                        GraphTitle = "Conteggi Corretti in Pressione e Temperatura";
+                        MainGrid.Children.Add(GraphData(Dates, FullCorrCounts, Color.FromArgb(200, 50, 110, 200), "Conteggi Corretti", SmoothValue.Text == "OFF" ? false : true, (uint)AvgSlider.Value, err_data1: DeltaFullCorrCounts, HorLine: false));
                     }
 
                     OutlierBox.IsEnabled = DatePickerPanel.IsEnabled = TempCorrBox.IsEnabled = AvgSlider.IsEnabled = true;
                     if ((uint)AvgSlider.Value != AvgSlider.Minimum)
-                    {
                         ShowHideData.IsEnabled = true;
-                        if (ShowHideData.IsChecked == true)
-                            ShowHideData_Click(1, null);
-                    }
                     break;
                 case "SIGMA":
-                    GraphTitle = "Scarto dei Conteggi Corr. in Pressione";
-                    MainGrid.Children.Add(SigmaTwo(Dates, CorrCounts));
-                    OutlierBox.IsEnabled = DatePickerPanel.IsEnabled = true;
+                    GraphTitle = "Scarto dei Conteggi Corr. in Pressione" + (TempCorrBox.IsChecked.Value ? " e Temperatura" : "");
+                    MainGrid.Children.Add(SigmaTwo(Dates, TempCorrBox.IsChecked.Value ? FullCorrCounts : CorrCounts));
+                    TempCorrBox.IsEnabled = OutlierBox.IsEnabled = DatePickerPanel.IsEnabled = true;
                     AvgSlider.IsEnabled = false;
                     ShowHideData.IsEnabled = false;
                     break;
@@ -399,12 +394,12 @@ namespace MuonDetectorReader
                 else if (DG_CCP.IsChecked == true)
                 {
                     GraphTitle = DG_P.IsChecked == true ? "ContCorrettiPress_vs_Press" : "ContCorrettiPress_vs_Temp";
-                    MainGrid.Children.Add(GraphTwoData(Dates, CorrCounts, DG_P.IsChecked == true ? Press : Temp, "Conteggi", DG_P.IsChecked == true ? "Pressione" : "Temperatura", Color.FromArgb(120, 50, 110, 200), DG_P.IsChecked == true ? Colors.Orange : Colors.DarkMagenta, data2Div: DG_T.IsChecked == true ? 5 : 50));
+                    MainGrid.Children.Add(GraphTwoData(Dates, CorrCounts, DG_P.IsChecked == true ? Press : Temp, "Conteggi Corretti", DG_P.IsChecked == true ? "Pressione" : "Temperatura", Color.FromArgb(120, 50, 110, 200), DG_P.IsChecked == true ? Colors.Orange : Colors.DarkMagenta, data2Div: DG_T.IsChecked == true ? 5 : 50));
                 }
                 else if (DG_CCPT.IsChecked == true)
                 {
                     GraphTitle = DG_P.IsChecked == true ? "ContCorrettiPressTemp_vs_Press" : "ContCorrettiPressTemp_vs_Temp";
-                    MainGrid.Children.Add(GraphTwoData(Dates, FullCorrCounts, DG_P.IsChecked == true ? Press : Temp, "Conteggi", DG_P.IsChecked == true ? "Pressione" : "Temperatura", Color.FromArgb(120, 50, 110, 200), DG_P.IsChecked == true ? Colors.Orange : Colors.DarkMagenta, data2Div: DG_T.IsChecked == true ? 5 : 50));
+                    MainGrid.Children.Add(GraphTwoData(Dates, FullCorrCounts, DG_P.IsChecked == true ? Press : Temp, "Conteggi Corretti", DG_P.IsChecked == true ? "Pressione" : "Temperatura", Color.FromArgb(120, 50, 110, 200), DG_P.IsChecked == true ? Colors.Orange : Colors.DarkMagenta, data2Div: DG_T.IsChecked == true ? 5 : 50));
                 }
                 else
                 {
@@ -433,31 +428,49 @@ namespace MuonDetectorReader
 
         private void TempCorrBox_Click(object sender, RoutedEventArgs e)
         {
-
-            //Button buttSim = new Button() { Tag = "CC" };
-            //Graph_Click(buttSim, null);
-
-            if (sender != null && MainGrid.Children.Count >= 4)
+            if (sender != null && MainGrid.Children.Count >= 4 && ActiveGraph != "SIGMA")
             {
                 PlotView pv = ((MainGrid.Children[3] as Grid).Children[0] as PlotView);
 
+                OxyPlot.Annotations.PolygonAnnotation confarea = null;
+                OxyPlot.Annotations.PolylineAnnotation smoothline = null;
+
+                try
+                {
+                    confarea = pv.Model.Annotations.OfType<OxyPlot.Annotations.PolygonAnnotation>().First();
+                } catch { }
+                try
+                {
+                    smoothline = pv.Model.Annotations.OfType<OxyPlot.Annotations.PolylineAnnotation>().First();
+                }catch { }
+
+
+                if (confarea != null)
+                    pv.Model.Annotations.Remove(confarea);
+
                 if (TempCorrBox.IsChecked == true)
                 {
-                    pv.Model.Title = GraphTitle = "Conteggi Corretti in Pressione e Temp.";
+                    pv.Model.Title = GraphTitle = "Conteggi Corretti in Pressione e Temperatura";
                     pv.Model.Series.Insert(0, UpdateTemperatureCorr(Dates, FullCorrCounts, pv));
+
+                    confarea = UpdateTemperatureCorrAnn(Dates, FullCorrCounts, DeltaFullCorrCounts, pv);
                 }
                 else
                 {
                     pv.Model.Title = GraphTitle = "Conteggi Corretti in Pressione";
                     pv.Model.Series.Insert(0, UpdateTemperatureCorr(Dates, CorrCounts, pv));
+
+                    confarea = UpdateTemperatureCorrAnn(Dates, CorrCounts, DeltaCorrCounts, pv);
                 }
                 pv.Model.Series.RemoveAt(1);
 
-                List<DataPoint> dp = (pv.Model.Series.First() as FunctionSeries).Points;
+                pv.Model.Annotations.Insert(0,confarea);
 
-                if (pv.Model.Annotations.Count > 0)
+                List<DataPoint> dp = (pv.Model.Series.First() as LineSeries).Points;
+
+                if (smoothline!=null)
                 {
-                    pv.Model.Annotations.RemoveAt(0);
+                    pv.Model.Annotations.Remove(smoothline);
                     pv.Model.Annotations.Insert(0, Smoothed(dp, (uint)AvgSlider.Value));
                 }
 
@@ -470,6 +483,11 @@ namespace MuonDetectorReader
                 }
             }
 
+            if (ActiveGraph == "SIGMA")
+            {
+                Button buttSim = new Button() { Tag = "SIGMA" };
+                Graph_Click(buttSim, null);
+            }
         }
 
         private void OutliersBox_Click(object sender, RoutedEventArgs e)
@@ -477,7 +495,7 @@ namespace MuonDetectorReader
             GenerateCorrCounts();
             Graph_Click(new Button() { Tag = ActiveGraph }, null);
 
-            ShowHideData.IsChecked = false;
+            ShowHideData.IsChecked = HideData = false;
 
             if (OutlierBox.IsChecked == false)
                 OutlierSlider.IsEnabled = false;
@@ -571,18 +589,6 @@ namespace MuonDetectorReader
             }
         }
 
-
-        public double GetTemperature(DateTime Date)
-        {
-            const double XC = -535250.20816;
-            const double A = 10.28654;
-            const double w = 203.63014;
-            const double y0 = 20.93909;
-
-            double dDate = Date.ToOADate() + 2415018.5; // Julian Day
-            return y0 + A * Math.Sin(Math.PI * (dDate - XC) / w);
-        }
-
         private void GenerateCorrCounts()
         {
             if (RawCounts.Count != 0 && PmP0.Count != 0)
@@ -601,29 +607,91 @@ namespace MuonDetectorReader
                 for (int i = 0; i < PmP0.Count; i++)
                     CorrCounts.Add(Math.Exp(-Beta * PmP0[i])  * RawCounts[i]);
 
+                DeltaCorrCounts = PressureErrorProp();
 
-                double Temp_avg = Temp.Average();
+                Temp_avg = Temp.Average();
 
                 List<double> TmT0 = new List<double>();
                 Temp.ForEach(t => TmT0.Add(t - Temp_avg));
 
-                //double aT = CalcTempCoeff(TmT0, RawCounts);
-                double kT = -0.001599129876488731; // Valido solo per EKAR, stimato dai dati 2024_09 - 2025_11
+                //double kT = CalcTempCoeff(TmT0, RawCounts);
 
                 for (int i = 0; i < CorrCounts.Count; i++)
                   FullCorrCounts.Add(CorrCounts[i] * Math.Exp(-kT * TmT0[i]));
+
+                DeltaFullCorrCounts = TemperatureErrorProp();
             }
         }
+
+        public List<double> PressureErrorProp()
+        {
+            double DeltaP = 0.5; // hPa
+
+            double N0_bar = RawCounts.Average();
+
+            List<double> Results = new List<double>();
+
+            for (int i = 0; i < CorrCounts.Count; i++)
+            {
+                double N = CorrCounts[i];
+                double P = Press[i];
+
+                double term1 = N0_bar / Math.Pow(N, 2);
+                double term2 = Math.Pow(Beta * DeltaP, 2);
+                double term3 = Math.Pow((P - refPress) * SigmaBeta, 2);
+                double sumUnderRoot = term1 + term2 + term3;
+
+                double deltaN = N * Math.Sqrt(sumUnderRoot);
+
+                Results.Add(deltaN);
+            }
+
+            return Results;
+        }
+
+        public List<double> TemperatureErrorProp()
+        {
+            double DeltaT = 0.5; // °C
+
+            double N0_bar = CorrCounts.Average();
+
+            List<double> Results = new List<double>();
+
+            for (int i = 0; i < FullCorrCounts.Count; i++)
+            {
+                double N = FullCorrCounts[i];
+                double T = Temp[i];
+
+                double term1 = N0_bar / Math.Pow(N, 2);
+                double term2 = Math.Pow(kT * DeltaT, 2);
+                double term3 = Math.Pow((T - Temp_avg) * SigmakT, 2);
+                double sumUnderRoot = term1 + term2 + term3;
+
+                double deltaN = N * Math.Sqrt(sumUnderRoot);
+
+                Results.Add(deltaN);
+            }
+
+            return Results;
+        }
+
 
         private void AvgSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (sender != null && MainGrid.Children.Count >= 4)
             {
                 PlotView pv = ((MainGrid.Children[3] as Grid).Children[0] as PlotView);
-                List<DataPoint> dp = (pv.Model.Series.First() as FunctionSeries).Points;
+                List<DataPoint> dp = (pv.Model.Series.First() as LineSeries).Points;
 
-                if (pv.Model.Annotations.Count > 0)
-                    pv.Model.Annotations.RemoveAt(0);
+                OxyPlot.Annotations.PolylineAnnotation smoothline = null;
+
+                try
+                {
+                    smoothline = pv.Model.Annotations.OfType<OxyPlot.Annotations.PolylineAnnotation>().First();
+                    if (smoothline != null)
+                        pv.Model.Annotations.Remove(smoothline);
+                }
+                catch { }
 
                 if ((uint)AvgSlider.Value != AvgSlider.Minimum)
                 {
@@ -643,7 +711,7 @@ namespace MuonDetectorReader
                     {
                         if (ShowHideData.IsChecked == true)
                         {
-                            ShowHideData.IsChecked = false;
+                            ShowHideData.IsChecked = HideData = false;
                             ShowHideData_Click(1, null);
                         }
 
@@ -656,15 +724,35 @@ namespace MuonDetectorReader
             }
         }
 
-
+        OxyColor confareaColor = OxyColors.Black;
         private void ShowHideData_Click(object sender, RoutedEventArgs e)
         {
             if (sender != null && MainGrid.Children.Count >= 4)
             {
-                PlotView pv = (MainGrid.Children[3] as Grid).Children[0] as PlotView;
+                HideData = ShowHideData.IsChecked.Value;
 
-                if (pv.Model.Series.Count > 0)
+                PlotView pv = (MainGrid.Children[3] as Grid).Children[0] as PlotView;
+                OxyPlot.Annotations.PolygonAnnotation confarea = null;
+
+                try
+                {
+                    confarea = pv.Model.Annotations.OfType<OxyPlot.Annotations.PolygonAnnotation>().First();
+                }
+                catch 
+                {
+                    pv.Model.Axes[0].Pan(1e-5);
+                }
+
+                if (pv.Model.Series.Count > 1)
                   pv.Model.Series[0].IsVisible = !pv.Model.Series[0].IsVisible;
+
+                if (confarea != null)
+                {
+                    if (confareaColor == OxyColors.Black)
+                        confareaColor = confarea.Fill;
+
+                    confarea.Fill = confarea.Fill != OxyColors.Transparent? OxyColors.Transparent : confareaColor;
+                }
 
                 pv.InvalidatePlot(true);
             }
@@ -752,7 +840,7 @@ namespace MuonDetectorReader
                 XmlNode xmlSettings = xmlDoc.SelectSingleNode("Settings");
 
                 xmlBeta = xmlDoc.CreateElement("Beta");
-                xmlBetaValue = xmlDoc.CreateTextNode(PressBox.Text);
+                xmlBetaValue = xmlDoc.CreateTextNode("0");
 
                 xmlBeta.AppendChild(xmlBetaValue);
                 xmlSettings.AppendChild(xmlBeta);
@@ -762,6 +850,26 @@ namespace MuonDetectorReader
             {
                 xmlBeta.InnerText = null;
                 xmlBeta.AppendChild(xmlBetaValue);
+            }
+
+            XmlText xmlSigmaBetaValue = xmlDoc.CreateTextNode(SigmaBeta.ToString());
+            XmlNode xmlSigmaBeta = xmlDoc.SelectSingleNode("Settings/SigmaBeta");
+
+            if (xmlSigmaBeta == null)
+            {
+                XmlNode xmlSettings = xmlDoc.SelectSingleNode("Settings");
+
+                xmlSigmaBeta = xmlDoc.CreateElement("SigmaBeta");
+                xmlSigmaBetaValue = xmlDoc.CreateTextNode("0");
+
+                xmlSigmaBeta.AppendChild(xmlSigmaBetaValue);
+                xmlSettings.AppendChild(xmlSigmaBeta);
+
+            }
+            else
+            {
+                xmlSigmaBeta.InnerText = null;
+                xmlSigmaBeta.AppendChild(xmlSigmaBetaValue);
             }
 
             xmlDoc.Save(SettingFilePath);
@@ -873,6 +981,18 @@ namespace MuonDetectorReader
         private void CloseClick(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void ShowHelpClick(object sender, RoutedEventArgs e)
+        {
+            if (MainGrid.Children.Count >= 4)
+            { 
+                var plotVis = (MainGrid.Children[3] as Grid).Visibility;
+                var Vis = plotVis == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+                (MainGrid.Children[3] as Grid).Visibility = Vis;
+
+                (sender as Button).Background = Vis != Visibility.Visible ? Brushes.DodgerBlue : Brushes.WhiteSmoke;
+            }
         }
 
         private void Fluxgate_Click(object sender, RoutedEventArgs e)
