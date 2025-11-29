@@ -18,6 +18,8 @@ using System.Threading.Tasks;
 using MuonDetectorReader.Utils;
 using System.Windows.Documents;
 using FontWeights = System.Windows.FontWeights;
+using System.Diagnostics;
+using System.Windows.Navigation;
 
 namespace MuonDetectorReader
 { 
@@ -1000,6 +1002,12 @@ namespace MuonDetectorReader
             Fluxgate FluxgateWindow = new Fluxgate();
             FluxgateWindow.Show();
 
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            e.Handled = true;
         }
     }
 }
