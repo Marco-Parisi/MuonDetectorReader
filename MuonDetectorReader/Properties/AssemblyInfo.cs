@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyTitle("MuonDetectorReader")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Marco Parisi")]
 [assembly: AssemblyProduct("MuonDetectorReader")]
 [assembly: AssemblyCopyright("Copyright ©  2025")]
 [assembly: AssemblyTrademark("")]

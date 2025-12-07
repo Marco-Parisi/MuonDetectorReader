@@ -178,7 +178,7 @@ namespace MuonDetectorReader
             if (ParName.Contains("Conteggi"))
             {
                 fs.TrackerFormatString = ParName + " : {Y:0.}";
-                yAxis.LabelFormatter = (x) => ((x - data1.Average()) * 100 / data1.Average()).ToString("0.0") + "%";
+                yAxis.LabelFormatter = (x) => ((x - data1.Average()) * 100 / data1.Average()).ToString("0.00") + "%";
             }
             else
                 fs.TrackerFormatString = ParName + " : {Y:0.00}";

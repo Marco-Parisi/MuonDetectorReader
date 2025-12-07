@@ -114,14 +114,18 @@ namespace MuonDetectorReader
                     Press.Reverse();
                     RawCounts.Reverse();
 
-                    DataLostCheck();
-
                     RemoveDuplicates();
 
                     oldRawCounts = new List<double>(RawCounts);
 
-                    if (BetaBox.Text != "nessuno" && double.TryParse(PressBox.Text, out double refPress))
+                    if (BetaBox.Text == "nessuno" || BetaBox.Text == "0,000000")
                     {
+                        MessageBox.Show("Per continuare:\n 1) Inserire un valore valido di P0 (Pressione di riferimento).\n 2) cliccare su \"Stima Beta\".", "Attenzione");
+                    }
+                    else if (BetaBox.Text != "nessuno" && double.TryParse(PressBox.Text, out double refPress))
+                    {
+                        DataLostCheck();
+
                         PmP0.Clear();
                         Press.ForEach(point => PmP0.Add(point - refPress));
 
