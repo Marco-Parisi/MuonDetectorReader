@@ -8,6 +8,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Markup;
 using System.Windows.Media;
 using PlotView = OxyPlot.Wpf.PlotView;
 
@@ -92,6 +93,16 @@ namespace MuonDetectorReader
             var upperLimitPoints = new List<DataPoint>();
             var lowerLimitPoints = new List<DataPoint>();
 
+            double fsPointsMean = data1.Average();
+            double fsPointsMax = data1.Max();
+            double fsPointsMin = data1.Min();
+
+            if(ParName.Contains("Conteggi"))
+            {
+                data1 = data1.Select(d => (d - fsPointsMean) * 100 / fsPointsMean).ToList();
+                err_data1 = err_data1?.Select(d => d * 100/ fsPointsMean ).ToList();
+            }
+
             int i = 0;
 
             foreach (DateTime date in Dates)
@@ -134,11 +145,6 @@ namespace MuonDetectorReader
                 //n.Annotations.Add(confidenceArea);
             }
 
-            double fsPointsMean = fs.Points.Average(d => d.Y);
-            double fsPointsMin, fsPointsMax;
-            fsPointsMax = fs.Points.Max(p => p.Y);
-            fsPointsMin = fs.Points.Min(p => p.Y);
-
             // Uso i per il numero di decimali da arrotondare
             if (ParName.Contains("Conteggi"))
                 i = 0;
@@ -162,23 +168,31 @@ namespace MuonDetectorReader
                 Subtitle = "File: " + MainWindow.FileName + " | Dati: " + Dates.Count.ToString(),
             };
 
+            if (ParName.Contains("Conteggi"))
+            {
+                fsPointsMean = fs.Points.Average(d => d.Y);
+                fsPointsMax = fs.Points.Max(p => p.Y);
+                fsPointsMin = fs.Points.Min(p => p.Y);
+            }
 
             LinearAxis yAxis = new LinearAxis()
             {
-                Title = ParName,        
+                Title = ParName,
                 AxisTitleDistance = 20,
                 IntervalLength = 30,
                 MajorGridlineStyle = LineStyle.Dash,
                 MinorGridlineStyle = LineStyle.Dot,
                 Maximum = fsPointsMax + (fsPointsMax / Div),
                 Minimum = fsPointsMin - (fsPointsMin / Div),
-
             };
 
             if (ParName.Contains("Conteggi"))
             {
-                fs.TrackerFormatString = ParName + " : {Y:0.}";
-                yAxis.LabelFormatter = (x) => ((x - data1.Average()) * 100 / data1.Average()).ToString("0.00") + "%";
+                fs.TrackerFormatString = ParName + " : {Y:0.00}%";
+                yAxis.LabelFormatter = (x) => x.ToString("0.00") + "%";
+                yAxis.Maximum = fsPointsMax + (fsPointsMax / (Div/20));
+                yAxis.Minimum = fsPointsMin - (fsPointsMax / (Div/20));
+                //yAxis.LabelFormatter = (x) => ((x - fsPointsMean) * 100 / fsPointsMean).ToString("0.00") + "%";
             }
             else
                 fs.TrackerFormatString = ParName + " : {Y:0.00}";
@@ -245,8 +259,15 @@ namespace MuonDetectorReader
                     PlotView p = grid.Children[0] as PlotView;
                     if (resetButton.Visibility == Visibility.Visible)
                     {
-                        p.Model.Axes[1].Maximum = fsPointsMax + (fsPointsMax / Div);
-                        p.Model.Axes[1].Minimum = fsPointsMin - (fsPointsMin / Div);
+                        int div = Div;
+                        double t = fsPointsMin;
+                        if (ParName.Contains("Conteggi"))
+                        {
+                            div /= 20;
+                            t = fsPointsMax;
+                        }
+                        p.Model.Axes[1].Maximum = fsPointsMax + (fsPointsMax / div);
+                        p.Model.Axes[1].Minimum = fsPointsMin - (t / div);
                         p.ResetAllAxes();
                         resetButton.Visibility = Visibility.Collapsed;
                         stretchButton.Visibility = Visibility.Visible;
@@ -288,10 +309,14 @@ namespace MuonDetectorReader
             LinearAxis yAxis2 = new LinearAxis();
             LineSeries fs2 = new LineSeries();
 
-            n.Series.Add(AvgLine(fs.Points));
+            if(ParName.Contains("Conteggi"))
+                n.Series.Add(AvgLine(fs.Points, true));
+            else
+                n.Series.Add(AvgLine(fs.Points));
+
             if (Smooth)
             {
-                n.Annotations.Add(Smoothed(fs.Points, Window, err_data1));
+                n.Annotations.Add(Smoothed(fs.Points, Window));//, err_data1));
             }
 
             n.Axes.Add(xAxis);
@@ -1094,7 +1119,13 @@ namespace MuonDetectorReader
             };
             fs.Decimator = Decimator.Decimate;
 
+            double fsPointsMean = data.Average();
+            double fsPointsMax = data.Max();
+            double fsPointsMin = data.Min();
+
             int i = 0;
+
+            data = data.Select(d => (d - fsPointsMean) * 100 / fsPointsMean).ToList();
 
             foreach (DateTime date in Dates)
             {
@@ -1112,11 +1143,6 @@ namespace MuonDetectorReader
 
             i = fs.Points.Count;
 
-            double fsPointsMean = fs.Points.Average(d => d.Y);
-            double fsPointsMin, fsPointsMax;
-            fsPointsMax = fs.Points.Max(p => p.Y);
-            fsPointsMin = fs.Points.Min(p => p.Y);
-
             pv.Model.LegendTitle = "Media = " + Math.Round(fsPointsMean, 0) + "\n Max = " + Math.Round(fsPointsMax, 0) + "\n Min = " + Math.Round(fsPointsMin, 0);
 
             return fs;
@@ -1128,7 +1154,13 @@ namespace MuonDetectorReader
 
             var upperLimitPoints = new List<DataPoint>();
             var lowerLimitPoints = new List<DataPoint>();
+
+            double fsPointsMean = data.Average();
+
             int i = 0;
+
+            data = data.Select(d => (d - fsPointsMean) * 100 / fsPointsMean).ToList();
+            err_data = err_data.Select(d => d * 100 / fsPointsMean).ToList();
 
             foreach (DateTime date in Dates)
             {
@@ -1258,19 +1290,20 @@ namespace MuonDetectorReader
             return weightedAverageSeries;
         }
 
-        public static LineSeries AvgLine(List<DataPoint> DP)
+        public static LineSeries AvgLine(List<DataPoint> DP, bool counts = false)
         {
-            double yMean = DP.Average( p => p.Y);
+            double yMean = DP.Average(p => p.Y);
             DataPoint firtsDP = new DataPoint(DP.First().X, yMean);
-            DataPoint LastDP = new DataPoint(DP.Last().X, yMean);
-
+            DataPoint LastDP = new DataPoint(DP.Last().X, yMean); ;
+            string FormatString = " Retta Media" + (!counts ? ": " + yMean.ToString("0.00") : "");
+            
             LineSeries fs = new LineSeries()
             {
                 CanTrackerInterpolatePoints = true,
                 Color = OxyColor.FromArgb(200, 0, 0, 0),
                 LineStyle = LineStyle.Dash,
                 StrokeThickness = 2,
-                TrackerFormatString = " Retta Media: " + yMean.ToString(),
+                TrackerFormatString = FormatString,
             };
 
             fs.Points.Add(firtsDP);
