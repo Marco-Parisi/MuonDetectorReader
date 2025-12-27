@@ -247,21 +247,32 @@ namespace MuonDetectorReader
 
                 StreamWriter sw = new StreamWriter(path);
 
-                sw.WriteLine("Export dei dati: P0 = {0} ; Beta = {1}", refPress, Beta);
+                sw.WriteLine("### Export dei dati: P0 = {0} ; Beta = {1} ± {2}", refPress, Beta, SigmaBeta);
+                sw.WriteLine("### Coeff. Corr. Temperatura (EKAR): kT = {0} ± {1}", kT, SigmakT);
 
+                sw.Write("### Rimozione Outliers: ");
                 if (OutlierBox.IsChecked == true)
-                    sw.WriteLine("Rimozione Outliers: Attiva (" + OutlierSlider.Value.ToString("F") + "σ)");
+                    sw.WriteLine("Attiva (" + OutlierSlider.Value.ToString("F") + "σ)");
                 else
-                    sw.WriteLine("Rimozione Outliers: Disattiva");
+                    sw.WriteLine("Disattiva");
 
-                sw.WriteLine("File di origine => " + FileName);
-                sw.WriteLine("Formato dei dati : ");
-                sw.WriteLine("Data\tTemp\tPress\tCont.Grezzi\tCont.Corr. P\tCont.Corr. PT");
+                sw.WriteLine("### File di origine => " + FileName);
+                sw.WriteLine("### PCC = Pressure Corrected Counts " + FileName);
+                sw.WriteLine("### PTCC = Pressure Temperature Corrected Counts " + FileName);
+                sw.WriteLine("\n### Formato dei dati separati da TAB:\n");
+                sw.WriteLine("Date\tTemp\tPress\tCounts\tPCC\tErr PCC\tPTCC\tErr PTCC");
                 sw.WriteLine();
 
                 int i = CorrCounts.Count - 1;
                 for (; i >= 0; i--)
-                    sw.WriteLine(Dates[i] + "\t{0:.0}\t{1:.00}\t{2}\t{3}\t{4}", Temp[i], Press[i], RawCounts[i], Math.Round(CorrCounts[i], 0), Math.Round(FullCorrCounts[i], 0));
+                    sw.WriteLine(Dates[i] + "\t{0:.0}\t{1:.00}\t{2}\t{3:.00}\t{4:.00}\t{5:.00}\t{6:.00}", 
+                        Temp[i], 
+                        Press[i], 
+                        RawCounts[i], 
+                        Math.Round(CorrCounts[i], 2),
+                        Math.Round(DeltaCorrCounts[i], 2),
+                        Math.Round(FullCorrCounts[i], 2),
+                        Math.Round(DeltaFullCorrCounts[i], 2));
 
                 sw.Close();
 
